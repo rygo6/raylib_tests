@@ -1,0 +1,10 @@
+# Built tools
+/src/*.exe
+/src/image_comparison_capture
+/src/image_comparison_diff
+
+# Only the baseline PNGs are committed. The candidate set (rlgl) and the diff outputs are
+# regenerated locally for each comparison run.
+/image_equivalence/rlgl/
+/image_equivalence/diffs/
+/image_equivalence/report.html
