@@ -35,6 +35,7 @@
 ********************************************************************************************/
 
 #include "raylib.h"
+#include <stdbool.h>
 
 #include <stdio.h>              // Required for: printf(), fopen(), fprintf()
 #include <stdlib.h>            // Required for: malloc(), free(), qsort(), strtok()
@@ -80,6 +81,10 @@ static char excludes[MAX_EXCLUDES][192];
 static int excludeCount = 0;
 
 static int toleranceLevel = DIFF_TOLERANCE;     // Runtime per-channel tolerance (from config)
+static int spatialTolerance = 0;                // Spatial slack (px): a differing pixel is accepted
+                                                // if both images match within this radius — absorbs
+                                                // 1px line/curve rasterization tie-break shifts
+                                                // between graphics drivers/APIs
 
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
@@ -112,6 +117,7 @@ int main(int argc, char **argv)
         snprintf(diffDir, sizeof(diffDir), "%s", rini_get_value_text_fallback(cfg, "diff_dir", "diffs"));
         snprintf(htmlOut, sizeof(htmlOut), "%s", rini_get_value_text_fallback(cfg, "report",   "report.html"));
         toleranceLevel = rini_get_value_fallback(cfg, "tolerance", DIFF_TOLERANCE);
+        spatialTolerance = rini_get_value_fallback(cfg, "spatial_tolerance", 0);
         // Collect every 'exclude' entry (rini keeps duplicate keys), so excludes can be listed
         // one per line; each value may itself be a comma-separated list.
         for (unsigned int e = 0; e < cfg.count; e++)
@@ -124,7 +130,7 @@ int main(int argc, char **argv)
     if (!DirectoryExists(refDir)) { printf("ERROR: reference dir not found: %s\n", refDir); return 1; }
     if (!DirectoryExists(cmpDir)) { printf("ERROR: candidate dir not found: %s\n", cmpDir); return 1; }
     MakeDirectory(diffDir);
-    printf("Config: %s  |  tolerance=%d  |  %d exclusion(s)\n\n", configFile, toleranceLevel, excludeCount);
+    printf("Config: %s  |  tolerance=%d  |  spatial=%d  |  %d exclusion(s)\n\n", configFile, toleranceLevel, spatialTolerance, excludeCount);
     //------------------------------------------------------------------------------------
 
     // Compare: walk reference example subfolders and match each frame against the candidate
@@ -274,7 +280,49 @@ static void MakeDiffImage(Result *r)
 
         int m = dr; if (dg > m) m = dg; if (db > m) m = db; if (da > m) m = da;
         if (m > maxDiff) maxDiff = m;
-        if (m > toleranceLevel) diffPixels++;   // ignore sub-threshold GPU noise
+        if (m > toleranceLevel)
+        {
+            // Spatial slack: a 1px-shifted line/curve edge (driver rasterization tie-break) is not
+            // a real difference. The pixel only counts as differing when either direction fails to
+            // find a match within the radius: ref(p) must appear somewhere in cmp's neighborhood
+            // AND cmp(p) must appear somewhere in ref's neighborhood (symmetry catches content
+            // that was added as well as removed).
+            bool spatialMatch = false;
+            if (spatialTolerance > 0)
+            {
+                int x = (int)(p%w), y = (int)(p/w);
+                bool refFound = false, cmpFound = false;
+                for (int oy = -spatialTolerance; (oy <= spatialTolerance) && !(refFound && cmpFound); oy++)
+                {
+                    int ny = y + oy;
+                    if ((ny < 0) || (ny >= h)) continue;
+                    for (int ox = -spatialTolerance; ox <= spatialTolerance; ox++)
+                    {
+                        int nx = x + ox;
+                        if ((nx < 0) || (nx >= w)) continue;
+                        long q = (long)ny*w + nx;
+
+                        int e = 0, d;
+                        d = ca[p].r - cb[q].r; if (d < 0) d = -d; if (d > e) e = d;
+                        d = ca[p].g - cb[q].g; if (d < 0) d = -d; if (d > e) e = d;
+                        d = ca[p].b - cb[q].b; if (d < 0) d = -d; if (d > e) e = d;
+                        d = ca[p].a - cb[q].a; if (d < 0) d = -d; if (d > e) e = d;
+                        if (e <= toleranceLevel) refFound = true;
+
+                        e = 0;
+                        d = cb[p].r - ca[q].r; if (d < 0) d = -d; if (d > e) e = d;
+                        d = cb[p].g - ca[q].g; if (d < 0) d = -d; if (d > e) e = d;
+                        d = cb[p].b - ca[q].b; if (d < 0) d = -d; if (d > e) e = d;
+                        d = cb[p].a - ca[q].a; if (d < 0) d = -d; if (d > e) e = d;
+                        if (e <= toleranceLevel) cmpFound = true;
+
+                        if (refFound && cmpFound) break;
+                    }
+                }
+                spatialMatch = refFound && cmpFound;
+            }
+            if (!spatialMatch) diffPixels++;
+        }
 
         int rr = dr*8; if (rr > 255) rr = 255;
         int gg = dg*8; if (gg > 255) gg = 255;
