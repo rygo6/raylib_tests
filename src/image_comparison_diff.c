@@ -15,6 +15,15 @@
 *   deterministic (the system wall-clock, a live audio buffer, ...). Listed examples are
 *   reported as SKIP and never counted as failures.
 *
+*   Allowances: some examples have EXPECTED variability between graphics backends that survives
+*   the per-channel and spatial tolerances — cross-compiler floating-point ULP differences that
+*   flip knife-edge outcomes (fractal escape-iteration boundaries, rasterization ties on
+*   silhouette edges, shading noise one step above tolerance). An 'allow <example> <maxPixels>'
+*   entry grants that example a per-frame differing-pixel budget: frames within budget are
+*   reported as PASS~ (tolerated) and listed separately in the HTML report, so the allowance
+*   stays visible. Budgets should be sized from measured behavior with modest headroom — real
+*   regressions have always shown up orders of magnitude above these counts.
+*
 *   Settings are read from a rini config file; every path is relative to the working directory.
 *   Run this from the directory that holds the reference/candidate folders so the relative image
 *   paths written into the HTML resolve when opened in a browser.
@@ -56,7 +65,7 @@
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
-typedef enum { ST_MATCH = 0, ST_DIFF, ST_SIZE, ST_MISSING, ST_EXCLUDED } Status;
+typedef enum { ST_MATCH = 0, ST_DIFF, ST_SIZE, ST_MISSING, ST_EXCLUDED, ST_TOLERATED } Status;
 
 typedef struct {
     char example[192];          // Example name (subfolder)
@@ -67,6 +76,7 @@ typedef struct {
     Status status;              // Comparison outcome
     long diffPixels;            // Pixels differing beyond tolerance
     long totalPixels;           // Total pixels compared
+    long allowance;             // Per-frame differing-pixel budget (0 = bit-exact required)
     int maxDiff;                // Maximum per-channel delta found
     int w, h, cw, ch;           // Reference and candidate dimensions
 } Result;
@@ -80,6 +90,10 @@ static int resultCount = 0;
 static char excludes[MAX_EXCLUDES][192];
 static int excludeCount = 0;
 
+static char allowNames[MAX_EXCLUDES][192];      // Examples with an expected-variability budget
+static long allowBudgets[MAX_EXCLUDES];         // Per-frame differing-pixel budget for each
+static int allowCount = 0;
+
 static int toleranceLevel = DIFF_TOLERANCE;     // Runtime per-channel tolerance (from config)
 static int spatialTolerance = 0;                // Spatial slack (px): a differing pixel is accepted
                                                 // if both images match within this radius — absorbs
@@ -91,10 +105,12 @@ static int spatialTolerance = 0;                // Spatial slack (px): a differi
 //----------------------------------------------------------------------------------
 static void ParseExcludes(const char *csv);                 // Parse comma-separated exclude list
 static bool IsExcluded(const char *example);                // Check if an example is excluded
+static void ParseAllow(const char *text);                   // Parse an 'allow <example> <maxPixels>' entry
+static long GetAllowance(const char *example);              // Per-frame pixel budget (0 = none)
 static bool BytesEqual(const char *a, const char *b);       // Compare two files byte-for-byte
 static void MakeDiffImage(Result *r);                       // Compute metrics and write a diff image
 static int CompareResults(const void *a, const void *b);    // qsort comparator (example, then frame)
-static void WriteHtml(const char *htmlOut, int nMatch, int nDiff, int nSize, int nMiss, int nExcl);
+static void WriteHtml(const char *htmlOut, int nMatch, int nDiff, int nSize, int nMiss, int nExcl, int nTol);
 
 //----------------------------------------------------------------------------------
 // Program main entry point
@@ -122,6 +138,9 @@ int main(int argc, char **argv)
         // one per line; each value may itself be a comma-separated list.
         for (unsigned int e = 0; e < cfg.count; e++)
             if (strcmp(cfg.entries[e].key, "exclude") == 0) ParseExcludes(cfg.entries[e].text);
+        // Collect every 'allow' entry: "<example> <maxDiffPixels>" per line
+        for (unsigned int e = 0; e < cfg.count; e++)
+            if (strcmp(cfg.entries[e].key, "allow") == 0) ParseAllow(cfg.entries[e].text);
         if (haveCfg) rini_unload(&cfg);
     }
 
@@ -130,7 +149,8 @@ int main(int argc, char **argv)
     if (!DirectoryExists(refDir)) { printf("ERROR: reference dir not found: %s\n", refDir); return 1; }
     if (!DirectoryExists(cmpDir)) { printf("ERROR: candidate dir not found: %s\n", cmpDir); return 1; }
     MakeDirectory(diffDir);
-    printf("Config: %s  |  tolerance=%d  |  spatial=%d  |  %d exclusion(s)\n\n", configFile, toleranceLevel, spatialTolerance, excludeCount);
+    printf("Config: %s  |  tolerance=%d  |  spatial=%d  |  %d exclusion(s)  |  %d allowance(s)\n\n",
+           configFile, toleranceLevel, spatialTolerance, excludeCount, allowCount);
     //------------------------------------------------------------------------------------
 
     // Compare: walk reference example subfolders and match each frame against the candidate
@@ -163,6 +183,7 @@ int main(int argc, char **argv)
 
             if (excluded) { r->status = ST_EXCLUDED; continue; }
             if (!FileExists(r->cmpPath)) { r->status = ST_MISSING; continue; }
+            r->allowance = GetAllowance(example);
             if (BytesEqual(r->refPath, r->cmpPath)) { r->status = ST_MATCH; continue; }
 
             MakeDirectory(TextFormat("%s/%s", diffDir, example));
@@ -178,15 +199,18 @@ int main(int argc, char **argv)
 
     // Report: print PASS / FAIL / SKIP per comparison, then write the HTML report
     //------------------------------------------------------------------------------------
-    int nMatch = 0, nDiff = 0, nSize = 0, nMiss = 0, nExcl = 0;
+    int nMatch = 0, nDiff = 0, nSize = 0, nMiss = 0, nExcl = 0, nTol = 0;
     for (int i = 0; i < resultCount; i++)
     {
         Result *r = &results[i];
         switch (r->status)
         {
             case ST_MATCH:    nMatch++; printf("PASS  %s/%s\n", r->example, r->frame); break;
-            case ST_DIFF:     nDiff++;  printf("FAIL  %s/%s  (%ld/%ld px differ, max delta %d)\n",
-                                               r->example, r->frame, r->diffPixels, r->totalPixels, r->maxDiff); break;
+            case ST_TOLERATED: nTol++;  printf("PASS~ %s/%s  (%ld/%ld px differ, max delta %d — within allowance %ld)\n",
+                                               r->example, r->frame, r->diffPixels, r->totalPixels, r->maxDiff, r->allowance); break;
+            case ST_DIFF:     nDiff++;  printf("FAIL  %s/%s  (%ld/%ld px differ, max delta %d%s)\n",
+                                               r->example, r->frame, r->diffPixels, r->totalPixels, r->maxDiff,
+                                               (r->allowance > 0) ? TextFormat(" — EXCEEDS allowance %ld", r->allowance) : ""); break;
             case ST_SIZE:     nSize++;  printf("FAIL  %s/%s  (size mismatch %dx%d vs %dx%d)\n",
                                                r->example, r->frame, r->w, r->h, r->cw, r->ch); break;
             case ST_MISSING:  nMiss++;  printf("FAIL  %s/%s  (candidate missing)\n", r->example, r->frame); break;
@@ -194,13 +218,13 @@ int main(int argc, char **argv)
         }
     }
 
-    WriteHtml(htmlOut, nMatch, nDiff, nSize, nMiss, nExcl);
+    WriteHtml(htmlOut, nMatch, nDiff, nSize, nMiss, nExcl, nTol);
 
     int failures = nDiff + nSize + nMiss;
     printf("\n==================================================\n");
-    printf("%s  --  total=%d  pass=%d  fail=%d  skip=%d  (diffs=%d size=%d missing=%d)\n",
+    printf("%s  --  total=%d  pass=%d  tolerated=%d  fail=%d  skip=%d  (diffs=%d size=%d missing=%d)\n",
            (failures == 0) ? "OVERALL: PASS" : "OVERALL: FAIL",
-           resultCount, nMatch, failures, nExcl, nDiff, nSize, nMiss);
+           resultCount, nMatch, nTol, failures, nExcl, nDiff, nSize, nMiss);
     printf("HTML report: %s\n", htmlOut);
     //------------------------------------------------------------------------------------
 
@@ -234,6 +258,29 @@ static bool IsExcluded(const char *example)
 {
     for (int i = 0; i < excludeCount; i++) if (strcmp(excludes[i], example) == 0) return true;
     return false;
+}
+
+// Parse an 'allow' entry: "<example> <maxDiffPixels>" (whitespace separated)
+static void ParseAllow(const char *text)
+{
+    if ((text == NULL) || (text[0] == '\0') || (allowCount >= MAX_EXCLUDES)) return;
+
+    char name[192] = { 0 };
+    long budget = 0;
+    if (sscanf(text, "%191s %ld", name, &budget) == 2 && budget > 0)
+    {
+        snprintf(allowNames[allowCount], 192, "%s", name);
+        allowBudgets[allowCount] = budget;
+        allowCount++;
+    }
+    else printf("WARNING: malformed allow entry ignored: '%s' (expected '<example> <maxPixels>')\n", text);
+}
+
+// Per-frame differing-pixel budget for an example (0 = bit-exact required)
+static long GetAllowance(const char *example)
+{
+    for (int i = 0; i < allowCount; i++) if (strcmp(allowNames[i], example) == 0) return allowBudgets[i];
+    return 0;
 }
 
 // Two files are equal if their bytes are equal (identical PNG encodes identical pixels)
@@ -337,6 +384,9 @@ static void MakeDiffImage(Result *r)
     if (diffPixels == 0) r->status = ST_MATCH;   // differences all within tolerance -> pass
     else
     {
+        // Expected-variability allowance: within the example's per-frame budget the frame is
+        // tolerated (still reported and shown in the HTML, distinct from a bit-exact pass)
+        if ((r->allowance > 0) && (diffPixels <= r->allowance)) r->status = ST_TOLERATED;
         Image diff = { cd, w, h, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 };
         ExportImage(diff, r->diffPath);
     }
@@ -358,7 +408,7 @@ static int CompareResults(const void *a, const void *b)
 }
 
 // Write the HTML report: summary, differences (with images), skipped and matched lists
-static void WriteHtml(const char *htmlOut, int nMatch, int nDiff, int nSize, int nMiss, int nExcl)
+static void WriteHtml(const char *htmlOut, int nMatch, int nDiff, int nSize, int nMiss, int nExcl, int nTol)
 {
     FILE *o = fopen(htmlOut, "wb");
     if (o == NULL) { printf("ERROR: cannot write %s\n", htmlOut); return; }
@@ -372,7 +422,7 @@ static void WriteHtml(const char *htmlOut, int nMatch, int nDiff, int nSize, int
     fprintf(o, "  h1{margin:0 0 4px} .sub{color:#9aa0a6;margin-bottom:20px}\n");
     fprintf(o, "  .summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}\n");
     fprintf(o, "  .pill{padding:10px 16px;border-radius:10px;font-weight:600}\n");
-    fprintf(o, "  .pill.ok{background:#123d1a;color:#5ee27a} .pill.bad{background:#3d1212;color:#ff8080} .pill.neutral{background:#22262c;color:#cfd3d8}\n");
+    fprintf(o, "  .pill.ok{background:#123d1a;color:#5ee27a} .pill.bad{background:#3d1212;color:#ff8080} .pill.neutral{background:#22262c;color:#cfd3d8} .pill.warn{background:#3d3212;color:#e0b64a}\n");
     fprintf(o, "  .verdict{font-size:20px;font-weight:700;padding:12px 18px;border-radius:10px;display:inline-block;margin-bottom:24px}\n");
     fprintf(o, "  .verdict.pass{background:#123d1a;color:#5ee27a} .verdict.fail{background:#3d1212;color:#ff8080}\n");
     fprintf(o, "  h2{border-bottom:1px solid #2a2e35;padding-bottom:6px;margin-top:32px}\n");
@@ -395,6 +445,7 @@ static void WriteHtml(const char *htmlOut, int nMatch, int nDiff, int nSize, int
     fprintf(o, "  <div class=\"pill %s\">%d pixel diffs</div>\n", (nDiff ? "bad" : "neutral"), nDiff);
     fprintf(o, "  <div class=\"pill %s\">%d size mismatch</div>\n", (nSize ? "bad" : "neutral"), nSize);
     fprintf(o, "  <div class=\"pill %s\">%d missing</div>\n", (nMiss ? "bad" : "neutral"), nMiss);
+    fprintf(o, "  <div class=\"pill %s\">%d tolerated</div>\n", (nTol ? "warn" : "neutral"), nTol);
     fprintf(o, "  <div class=\"pill neutral\">%d skipped</div>\n", nExcl);
     fprintf(o, "</div>\n");
 
@@ -404,7 +455,7 @@ static void WriteHtml(const char *htmlOut, int nMatch, int nDiff, int nSize, int
         for (int i = 0; i < resultCount; i++)
         {
             Result *r = &results[i];
-            if ((r->status == ST_MATCH) || (r->status == ST_EXCLUDED)) continue;
+            if ((r->status == ST_MATCH) || (r->status == ST_EXCLUDED) || (r->status == ST_TOLERATED)) continue;
 
             fprintf(o, "<div class=\"card\">\n<h3>%s / %s</h3>\n", r->example, r->frame);
             if (r->status == ST_DIFF)
@@ -423,6 +474,26 @@ static void WriteHtml(const char *htmlOut, int nMatch, int nDiff, int nSize, int
                 fprintf(o, "  <figure><img src=\"%s\" loading=\"lazy\"><figcaption>candidate</figcaption></figure>\n", r->cmpPath);
             if (r->status == ST_DIFF)
                 fprintf(o, "  <figure><img src=\"%s\" loading=\"lazy\"><figcaption>diff (x8)</figcaption></figure>\n", r->diffPath);
+            fprintf(o, "</div>\n</div>\n");
+        }
+    }
+
+    if (nTol > 0)
+    {
+        fprintf(o, "<h2>Tolerated &mdash; expected variability, within allowance (%d)</h2>\n", nTol);
+        for (int i = 0; i < resultCount; i++)
+        {
+            Result *r = &results[i];
+            if (r->status != ST_TOLERATED) continue;
+
+            fprintf(o, "<div class=\"card\">\n<h3>%s / %s</h3>\n", r->example, r->frame);
+            fprintf(o, "<div class=\"meta\">%ld of %ld pixels differ (%.3f%%), max channel delta %d &mdash; allowance %ld</div>\n",
+                    r->diffPixels, r->totalPixels,
+                    (r->totalPixels ? 100.0*(double)r->diffPixels/(double)r->totalPixels : 0.0), r->maxDiff, r->allowance);
+            fprintf(o, "<div class=\"imgs\">\n");
+            fprintf(o, "  <figure><img src=\"%s\" loading=\"lazy\"><figcaption>reference</figcaption></figure>\n", r->refPath);
+            fprintf(o, "  <figure><img src=\"%s\" loading=\"lazy\"><figcaption>candidate</figcaption></figure>\n", r->cmpPath);
+            fprintf(o, "  <figure><img src=\"%s\" loading=\"lazy\"><figcaption>diff (x8)</figcaption></figure>\n", r->diffPath);
             fprintf(o, "</div>\n</div>\n");
         }
     }
