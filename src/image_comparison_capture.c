@@ -22,7 +22,7 @@
 *       image_comparison_capture [outputDir] [configFile]
 *
 *       outputDir    frames output root, overrides config       (config key: capture_output)
-*       configFile   rini config file                           (default: image_comparison.ini)
+*       configFile   rini config file                           (default: image_comparison_rlvk.ini)
 *
 *   Config keys (rini, "key value" pairs, '#' comments): examples_dir, frames, timeout_ms
 *
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
     //------------------------------------------------------------------------------------
     // CLI: image_comparison_capture [outputDir] [configFile]. Settings come from the rini
     // config; the output dir (which changes per run, e.g. baseline vs rlgl) may be given as argv[1].
-    const char *configFile = (argc > 2) ? argv[2] : "image_comparison.ini";
+    const char *configFile = (argc > 2) ? argv[2] : "image_comparison_rlvk.ini";
 
     char examplesDir[MAX_PATH_LEN], outDir[MAX_PATH_LEN], frames[128];
     unsigned int timeoutMs;

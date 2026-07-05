@@ -29,7 +29,7 @@
 *   paths written into the HTML resolve when opened in a browser.
 *
 *   USAGE:
-*       image_comparison_diff [configFile]              (default: image_comparison.ini)
+*       image_comparison_diff [configFile]              (default: image_comparison_rlvk.ini)
 *
 *   Config keys (rini, "key value" pairs, '#' comments):
 *       ref_dir, cmp_dir, diff_dir, report, tolerance, exclude (comma-separated names)
@@ -121,7 +121,7 @@ int main(int argc, char **argv)
     //------------------------------------------------------------------------------------
     // CLI: image_comparison_diff [configFile]. All settings come from the rini config, relative
     // to the cwd; run this from the directory holding the ref/cmp folders.
-    const char *configFile = (argc > 1) ? argv[1] : "image_comparison.ini";
+    const char *configFile = (argc > 1) ? argv[1] : "image_comparison_rlvk.ini";
 
     char refDir[512], cmpDir[512], diffDir[512], htmlOut[512];
     {

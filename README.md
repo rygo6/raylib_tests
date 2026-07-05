@@ -12,9 +12,12 @@ src/                                  C99 tools (link raylib) + rini.h (vendored
   image_comparison_diff.c             compare candidate vs baseline, print PASS/FAIL, write report.html
   Makefile
 image_equivalence/
-  image_comparison.ini                rini config (paths, frames, tolerance, exclusions)
+  image_comparison_rlvk.ini           Vulkan backend vs rlgl_baseline (allowances for expected variability)
+  image_comparison_rlsw.ini           software renderer vs its own rlsw_baseline (bit-exact)
   rlgl_baseline/<example>/frame_00NN.png  committed GL reference frames (+ environment.rini provenance)
-  rlgl/<example>/frame_00NN.png        candidate frames captured for a comparison run
+  rlsw_baseline/<example>/frame_00NN.png  committed software-renderer reference frames
+  rlvk/, rlsw_candidate/               per-run candidate captures (not committed)
+  report_rlvk.html, report_rlsw.html   per-backend HTML reports (not committed)
 ```
 
 PNGs are stored via **git LFS** (see `.gitattributes`).
