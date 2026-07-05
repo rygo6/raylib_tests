@@ -1,0 +1,8 @@
+# Only *_baseline reference sets are committed. Per-run outputs are transient:
+rlvk/
+rlgl/
+rlsw_candidate/
+diffs/
+diffs_rlsw/
+report.html
+report_rlsw.html
