@@ -13,7 +13,7 @@ src/                                  C99 tools (link raylib) + rini.h (vendored
   Makefile
 image_equivalence/
   image_comparison.ini                rini config (paths, frames, tolerance, exclusions)
-  baseline/<example>/frame_00NN.png   committed reference frames (+ environment.rini provenance)
+  rlgl_baseline/<example>/frame_00NN.png  committed GL reference frames (+ environment.rini provenance)
   rlgl/<example>/frame_00NN.png        candidate frames captured for a comparison run
 ```
 
