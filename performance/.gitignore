@@ -1,0 +1,15 @@
+# Generated captures (per-run stats + environment provenance), now platform x vendor labelled
+# e.g. rlgl_windows_nvidia/, rlvk_linux_amd/
+rlgl_*/
+rlsw_*/
+rlvk_*/
+
+# Generated reports (labelled: report_<backend>_<os>_<vendor>.html, report_comparison_<os>_<vendor>.html)
+report_*.html
+
+# Run logs
+*.log
+
+# Built tools
+src/*.exe
+src/*.o

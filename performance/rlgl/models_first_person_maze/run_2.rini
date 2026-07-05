@@ -1,0 +1,17 @@
+# raylib performance capture run
+run 2
+frames 231950
+measured_seconds 10.000027
+fps 23194.9378
+frame_min_ms 0.035400
+frame_max_ms 36.642500
+frame_median_ms 0.037700
+frame_avg_ms 0.043113
+frame_p95_ms 0.052700
+frame_p99_ms 0.081900
+cpu_avg_pct 2.8796
+cpu_peak_pct 3.4180
+ram_avg_bytes 75343438
+ram_peak_bytes 76398592
+vram_avg_bytes 15810560
+vram_peak_bytes 15810560
