@@ -40,6 +40,10 @@ static double now_sec(void){ static LARGE_INTEGER fr={0}; if(!fr.QuadPart) Query
 int main(int argc,char**argv){
     int N=4000; const char*e=getenv("RAYLIB_STRESS_LOAD"); if(e)N=atoi(e); if(argc>1)N=atoi(argv[1]); if(N<1)N=1;
     double runSec=3.0;
+    // RLVK_LTO=1 -> link WITH VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT (should match monolithic
+    // GPU perf, at a much higher link cost). Default: fast-link (no optimization).
+    int LTO = (getenv("RLVK_LTO") != NULL);
+    VkPipelineCreateFlags subFlags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | (LTO ? VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT : 0);
 
     VkInstance inst; VkApplicationInfo app={VK_STRUCTURE_TYPE_APPLICATION_INFO}; app.apiVersion=VK_API_VERSION_1_1;
     VkInstanceCreateInfo ici={VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO}; ici.pApplicationInfo=&app; CHECK(vkCreateInstance(&ici,NULL,&inst));
@@ -85,32 +89,33 @@ int main(int argc,char**argv){
         VkPipelineVertexInputStateCreateInfo vi={VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO}; vi.vertexBindingDescriptionCount=1; vi.pVertexBindingDescriptions=&vb; vi.vertexAttributeDescriptionCount=1; vi.pVertexAttributeDescriptions=&va;
         VkPipelineInputAssemblyStateCreateInfo ia={VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO}; ia.topology=VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         VkGraphicsPipelineLibraryCreateInfoEXT g={VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT}; g.flags=VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT;
-        VkGraphicsPipelineCreateInfo p={VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}; p.pNext=&g; p.flags=VK_PIPELINE_CREATE_LIBRARY_BIT_KHR; p.pVertexInputState=&vi; p.pInputAssemblyState=&ia;
+        VkGraphicsPipelineCreateInfo p={VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}; p.pNext=&g; p.flags=subFlags; p.pVertexInputState=&vi; p.pInputAssemblyState=&ia;
         CHECK(vkCreateGraphicsPipelines(dev,VK_NULL_HANDLE,1,&p,NULL,&viLib)); }
     // (2) pre-rasterization shaders (VS + viewport + raster)
     {   VkPipelineShaderStageCreateInfo st={VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO}; st.stage=VK_SHADER_STAGE_VERTEX_BIT; st.module=vm; st.pName="main";
         VkViewport vp={0,0,WIDTH,HEIGHT,0,1}; VkRect2D sc={{0,0},{WIDTH,HEIGHT}}; VkPipelineViewportStateCreateInfo vps={VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO}; vps.viewportCount=1; vps.pViewports=&vp; vps.scissorCount=1; vps.pScissors=&sc;
         VkPipelineRasterizationStateCreateInfo rs={VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO}; rs.polygonMode=VK_POLYGON_MODE_FILL; rs.cullMode=VK_CULL_MODE_BACK_BIT; rs.frontFace=VK_FRONT_FACE_COUNTER_CLOCKWISE; rs.lineWidth=1;
         VkGraphicsPipelineLibraryCreateInfoEXT g={VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT}; g.flags=VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT;
-        VkGraphicsPipelineCreateInfo p={VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}; p.pNext=&g; p.flags=VK_PIPELINE_CREATE_LIBRARY_BIT_KHR; p.stageCount=1; p.pStages=&st; p.pViewportState=&vps; p.pRasterizationState=&rs; p.layout=layout; p.renderPass=rp; p.subpass=0;
+        VkGraphicsPipelineCreateInfo p={VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}; p.pNext=&g; p.flags=subFlags; p.stageCount=1; p.pStages=&st; p.pViewportState=&vps; p.pRasterizationState=&rs; p.layout=layout; p.renderPass=rp; p.subpass=0;
         CHECK(vkCreateGraphicsPipelines(dev,VK_NULL_HANDLE,1,&p,NULL,&prLib)); }
     // (3) fragment shader (FS + depth)
     {   VkPipelineShaderStageCreateInfo st={VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO}; st.stage=VK_SHADER_STAGE_FRAGMENT_BIT; st.module=fm; st.pName="main";
         VkPipelineDepthStencilStateCreateInfo ds={VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO}; ds.depthTestEnable=VK_TRUE; ds.depthWriteEnable=VK_TRUE; ds.depthCompareOp=VK_COMPARE_OP_LESS;
         VkGraphicsPipelineLibraryCreateInfoEXT g={VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT}; g.flags=VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT;
-        VkGraphicsPipelineCreateInfo p={VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}; p.pNext=&g; p.flags=VK_PIPELINE_CREATE_LIBRARY_BIT_KHR; p.stageCount=1; p.pStages=&st; p.pDepthStencilState=&ds; p.layout=layout; p.renderPass=rp; p.subpass=0;
+        VkGraphicsPipelineCreateInfo p={VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}; p.pNext=&g; p.flags=subFlags; p.stageCount=1; p.pStages=&st; p.pDepthStencilState=&ds; p.layout=layout; p.renderPass=rp; p.subpass=0;
         CHECK(vkCreateGraphicsPipelines(dev,VK_NULL_HANDLE,1,&p,NULL,&fsLib)); }
     // (4) fragment output interface (blend + multisample)
     {   VkPipelineColorBlendAttachmentState cba={0}; cba.colorWriteMask=0xF; VkPipelineColorBlendStateCreateInfo cb={VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO}; cb.attachmentCount=1; cb.pAttachments=&cba;
         VkPipelineMultisampleStateCreateInfo ms={VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO}; ms.rasterizationSamples=VK_SAMPLE_COUNT_1_BIT;
         VkGraphicsPipelineLibraryCreateInfoEXT g={VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT}; g.flags=VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_OUTPUT_INTERFACE_BIT_EXT;
-        VkGraphicsPipelineCreateInfo p={VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}; p.pNext=&g; p.flags=VK_PIPELINE_CREATE_LIBRARY_BIT_KHR; p.pColorBlendState=&cb; p.pMultisampleState=&ms; p.layout=layout; p.renderPass=rp; p.subpass=0;
+        VkGraphicsPipelineCreateInfo p={VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}; p.pNext=&g; p.flags=subFlags; p.pColorBlendState=&cb; p.pMultisampleState=&ms; p.layout=layout; p.renderPass=rp; p.subpass=0;
         CHECK(vkCreateGraphicsPipelines(dev,VK_NULL_HANDLE,1,&p,NULL,&foLib)); }
 
     // ---- FAST-LINK (no LINK_TIME_OPTIMIZATION) ----
     VkPipeline pipe; double lt0=now_sec();
     {   VkPipeline libs[4]={viLib,prLib,fsLib,foLib}; VkPipelineLibraryCreateInfoKHR li={VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR}; li.libraryCount=4; li.pLibraries=libs;
         VkGraphicsPipelineCreateInfo p={VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}; p.pNext=&li; p.layout=layout;
+        p.flags = LTO ? VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT : 0;
         CHECK(vkCreateGraphicsPipelines(dev,VK_NULL_HANDLE,1,&p,NULL,&pipe)); }
     double linkMs=(now_sec()-lt0)*1000.0;
 
@@ -121,8 +126,8 @@ int main(int argc,char**argv){
     int side=(int)ceilf(cbrtf((float)N)); Mat4 proj=perspective(60.0f*3.14159f/180.0f,(float)WIDTH/HEIGHT,0.1f,1000.0f); Mat4*models=malloc(N*sizeof(Mat4));
     for(int i=0;i<N;i++){int x=i%side,y=(i/side)%side,z=i/(side*side); models[i]=translate((x-side*0.5f)*1.6f,(y-side*0.5f)*1.6f,(z-side*0.5f)*1.6f);}
 
-    printf("vkbench_gpl (GPL fast-link, headless) : device=%s  N=%d cubes\n", pdp.deviceName, N);
-    printf("  fast-link time: %.3f ms  (vs a monolithic compile, typically 1-50 ms)\n", linkMs);
+    printf("vkbench_gpl (GPL %s, headless) : device=%s  N=%d cubes\n", LTO ? "LINK-TIME-OPTIMIZED" : "fast-link", pdp.deviceName, N);
+    printf("  link time: %.3f ms  (%s)\n", linkMs, LTO ? "with optimization pass" : "fast-link, no optimization");
 
     VkClearValue cl[2]; cl[0].color=(VkClearColorValue){{0.05f,0.06f,0.08f,1}}; cl[1].depthStencil=(VkClearDepthStencilValue){1,0};
     long frames=0; double t0=now_sec(),t=t0,warm=t0+0.5,mStart=0;

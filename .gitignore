@@ -8,3 +8,5 @@
 /image_equivalence/rlgl/
 /image_equivalence/diffs/
 /image_equivalence/report.html
+performance/vkbench/*.exe
+performance/vkbench/*.spv
