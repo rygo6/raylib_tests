@@ -30,6 +30,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 
+#define RINI_MAX_LINE_SIZE 4096   // the curated example list exceeds rini's 512 default
 #define RINI_IMPLEMENTATION
 #include "rini.h"
 #include "perf_label.h"    // PerfComputeLabel(): "<os>_<vendor>" slug for output naming
@@ -38,6 +39,7 @@
     #define WIN32_LEAN_AND_MEAN
     #define COBJMACROS
     #include <windows.h>
+    #include <tlhelp32.h>
     #include <direct.h>         // _getcwd
     #include <dxgi1_4.h>        // GPU name + total VRAM (header-only; dynamic-loaded factory)
 
@@ -107,7 +109,61 @@ static void SetEnvVar(const char *name, const char *value)
 #endif
 }
 
+#if defined(_WIN32)
+// One Job object shared by every launched test, created with KILL_ON_JOB_CLOSE: if this
+// harness dies for ANY reason (crash, task kill, console close), the OS terminates every
+// test process with it. Tests can never outlive the harness and accumulate.
+static HANDLE GetTestJob(void)
+{
+    static HANDLE job = NULL;
+    if (job == NULL)
+    {
+        job = CreateJobObjectA(NULL, NULL);
+        if (job != NULL)
+        {
+            JOBOBJECT_EXTENDED_LIMIT_INFORMATION lim; ZeroMemory(&lim, sizeof(lim));
+            lim.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+            SetInformationJobObject(job, JobObjectExtendedLimitInformation, &lim, sizeof(lim));
+        }
+    }
+    return job;
+}
+
+// Kill every running process with this image name and wait until each is gone. Returns how
+// many were found. Used before every launch: a prior test that failed to close must never
+// overlap the next one (overlapping tests contend for GPU/CPU and corrupt all measurements).
+static int KillLingering(const char *exeName)
+{
+    int found = 0;
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) return 0;
+    PROCESSENTRY32 pe; pe.dwSize = sizeof(pe);
+    if (Process32First(snap, &pe))
+    {
+        do
+        {
+            if (_stricmp(pe.szExeFile, exeName) == 0)
+            {
+                HANDLE h = OpenProcess(PROCESS_TERMINATE | SYNCHRONIZE, FALSE, pe.th32ProcessID);
+                if (h != NULL)
+                {
+                    TerminateProcess(h, 1);
+                    WaitForSingleObject(h, 5000);
+                    CloseHandle(h);
+                    found++;
+                }
+            }
+        } while (Process32Next(snap, &pe));
+    }
+    CloseHandle(snap);
+    return found;
+}
+#endif
+
 // Spawn absExe from workDir, killing it after timeoutMs. 0 = self-exited, 1 = timed out, -1 = spawn failed.
+// The child joins the kill-on-close Job, any lingering instance of the same test is killed
+// first, and termination is VERIFIED before returning - the next test never starts while a
+// prior one is still alive.
 static int RunWithTimeout(const char *absExe, const char *workDir, unsigned int timeoutMs)
 {
 #if defined(_WIN32)
@@ -119,15 +175,27 @@ static int RunWithTimeout(const char *absExe, const char *workDir, unsigned int 
     dirWin[i] = '\0';
     snprintf(cmd, sizeof(cmd), "\"%s\"", exeWin);
 
+    // Guard: no stale instance of this test may be running from a previous (crashed) session
+    const char *base = strrchr(exeWin, '\\'); base = base ? base + 1 : exeWin;
+    int stale = KillLingering(base);
+    if (stale > 0) printf("    [guard] killed %d lingering instance(s) of %s before launch\n", stale, base);
+
     STARTUPINFOA si; ZeroMemory(&si, sizeof(si)); si.cb = sizeof(si);
     PROCESS_INFORMATION pi; ZeroMemory(&pi, sizeof(pi));
-    if (!CreateProcessA(NULL, cmd, NULL, NULL, FALSE, 0, NULL, dirWin, &si, &pi)) return -1;
+    if (!CreateProcessA(NULL, cmd, NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, dirWin, &si, &pi)) return -1;
+    if (GetTestJob() != NULL) AssignProcessToJobObject(GetTestJob(), pi.hProcess);
+    ResumeThread(pi.hThread);
 
     int rc = 0;
     if (WaitForSingleObject(pi.hProcess, timeoutMs) == WAIT_TIMEOUT)
     {
         TerminateProcess(pi.hProcess, 1);
-        WaitForSingleObject(pi.hProcess, 3000);
+        rc = 1;
+    }
+    // VERIFY the test is gone before the caller may start the next one
+    if (WaitForSingleObject(pi.hProcess, 10000) == WAIT_TIMEOUT)
+    {
+        printf("    [guard] WARNING: %s did not die within 10 s of termination\n", base);
         rc = 1;
     }
     CloseHandle(pi.hProcess);
@@ -186,7 +254,11 @@ static void WriteEnvironment(const char *outDir, const char *backend, const char
     rini_set_value_text(&md, "backend", backend, "graphics backend under test");
     rini_set_value_text(&md, "label", label, "platform x vendor label (os_vendor)");
     rini_set_value_text(&md, "machine", machine, "host machine name");
+    char osVersion[128]; PerfDetectOSVersion(osVersion, sizeof(osVersion));
+    char gpuDriver[128]; PerfDetectGpuDriver(gpuDriver, sizeof(gpuDriver));
     rini_set_value_text(&md, "os", os, "operating system");
+    rini_set_value_text(&md, "os_version", osVersion, "operating system version (RtlGetVersion)");
+    rini_set_value_text(&md, "gpu_driver", gpuDriver, "GPU user-mode driver version (DXGI CheckInterfaceSupport)");
     rini_set_value_text(&md, "gpu", gpu, "graphics card (DXGI adapter description)");
     rini_set_value(&md, "gpu_vram_total_mb", (int)(vramTotalMB + 0.5), "dedicated GPU memory, MB");
     rini_set_value(&md, "duration_ms", durationMs, "per-run measurement window, ms");

@@ -25,6 +25,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define RINI_MAX_LINE_SIZE 4096   // the curated example list exceeds rini's 512 default
 #define RINI_IMPLEMENTATION
 #include "rini.h"
 #include "perf_label.h"    // PerfComputeLabel(): "<os>_<vendor>" slug for output naming
@@ -55,7 +56,7 @@ typedef struct BackendStats {
     char        backend[64];
     char        label[128];
     char        dir[MAX_PATH_LEN];
-    char        gpu[256], os[64];
+    char        gpu[256], os[64], osVersion[128], gpuDriver[128];
     int         durationMs, warmupMs, runs, vramTotalMB;
     ExampleStats ex[MAX_EXAMPLES];
     int         exCount;
@@ -137,12 +138,14 @@ static void LoadBackend(const char *configFile, BackendStats *b)
         rini_data ed = rini_load(envPath);
         snprintf(b->gpu, sizeof(b->gpu), "%s", rini_get_value_text_fallback(ed, "gpu", "unknown"));
         snprintf(b->os, sizeof(b->os), "%s", rini_get_value_text_fallback(ed, "os", "unknown"));
+        snprintf(b->osVersion, sizeof(b->osVersion), "%s", rini_get_value_text_fallback(ed, "os_version", "unknown"));
+        snprintf(b->gpuDriver, sizeof(b->gpuDriver), "%s", rini_get_value_text_fallback(ed, "gpu_driver", "unknown"));
         b->durationMs  = rini_get_value_fallback(ed, "duration_ms", 0);
         b->warmupMs    = rini_get_value_fallback(ed, "warmup_ms", 0);
         b->runs        = rini_get_value_fallback(ed, "runs", 0);
         b->vramTotalMB = rini_get_value_fallback(ed, "gpu_vram_total_mb", 0);
         rini_unload(&ed);
-    } else { snprintf(b->gpu, sizeof(b->gpu), "unknown"); snprintf(b->os, sizeof(b->os), "unknown"); }
+    } else { snprintf(b->gpu, sizeof(b->gpu), "unknown"); snprintf(b->os, sizeof(b->os), "unknown"); snprintf(b->osVersion, sizeof(b->osVersion), "unknown"); snprintf(b->gpuDriver, sizeof(b->gpuDriver), "unknown"); }
 
     // Parse example list, load each example's runs
     char *tok = strtok(examplesRaw, ",");
@@ -202,8 +205,8 @@ static void WriteBackendReport(BackendStats *b)
 
     fprintf(f, "<!doctype html><html><head><meta charset=utf-8><meta name=viewport content=\"width=device-width,initial-scale=1\"><title>raylib perf - %s</title>%s</head><body>", b->backend, CSS);
     fprintf(f, "<h1>raylib performance &mdash; <span style='color:var(--acc)'>%s</span></h1>", b->backend);
-    fprintf(f, "<p class=env><b>GPU</b> %s &nbsp;|&nbsp; <b>OS</b> %s &nbsp;|&nbsp; <b>VRAM</b> %d MB &nbsp;|&nbsp; <b>%d</b> runs &times; <b>%d</b> ms (+%d ms warmup) at full speed</p>",
-            b->gpu, b->os, b->vramTotalMB, b->runs, b->durationMs, b->warmupMs);
+    fprintf(f, "<p class=env><b>GPU</b> %s (%d MB) &nbsp;|&nbsp; <b>Driver</b> %s &nbsp;|&nbsp; <b>OS</b> %s &nbsp;|&nbsp; <b>%d</b> runs &times; <b>%d</b> ms (+%d ms warmup) at full speed</p>",
+            b->gpu, b->vramTotalMB, b->gpuDriver, b->osVersion, b->runs, b->durationMs, b->warmupMs);
 
     // Main aggregate table
     fprintf(f, "<h2>Summary (representative run per example)</h2><div class=wrap><table>");
@@ -319,7 +322,8 @@ static void WriteComparisonReport(BackendStats *bk, int nb)
     fprintf(f, "<h1>raylib performance &mdash; backend comparison</h1>");
     fprintf(f, "<p class=env>");
     for (int k = 0; k < nb; k++) fprintf(f, "%s<b>%s</b>", (k?" &nbsp;vs&nbsp; ":""), bk[k].backend);
-    fprintf(f, " &nbsp;|&nbsp; <b>GPU</b> %s &nbsp;|&nbsp; %d runs &times; %d ms full speed</p>", bk[0].gpu, bk[0].runs, bk[0].durationMs);
+    fprintf(f, " &nbsp;|&nbsp; <b>GPU</b> %s (%d MB) &nbsp;|&nbsp; <b>Driver</b> %s &nbsp;|&nbsp; <b>OS</b> %s &nbsp;|&nbsp; %d runs &times; %d ms full speed</p>",
+        bk[0].gpu, bk[0].vramTotalMB, bk[0].gpuDriver, bk[0].osVersion, bk[0].runs, bk[0].durationMs);
     fprintf(f, "<p class=sub>Green = best backend for that example/metric, red = worst. Frame time &amp; FPS are the representative run; software (rlsw) has no GPU so its VRAM is ~0. Shader-heavy examples may not execute custom shaders on the software backend.</p>");
 
     ComparisonTable(f, bk, nb, "Frames per second (higher is better)", "Sustained FPS at full speed (uncapped).", M_FPS, "%.0f");

@@ -36,6 +36,9 @@ EXAMPLES=(
   shaders/shaders_raymarching_rendering
   others/performance_stress_test
   others/performance_stress_test_direct
+  others/bench_idle
+  others/bench_drawcalls
+  others/bench_instanced
 )
 
 case "$BACKEND" in

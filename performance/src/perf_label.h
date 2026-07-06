@@ -32,6 +32,7 @@
     #include <windows.h>
     #include <dxgi1_4.h>
     static const GUID PL_IID_IDXGIFactory1 = { 0x770aae78, 0xf26f, 0x4dba, { 0xa8, 0x29, 0x25, 0x3c, 0x83, 0xd1, 0xb3, 0x87 } };
+    static const GUID PL_IID_IDXGIDevice   = { 0x54ec77fa, 0x1377, 0x44e6, { 0x8c, 0x32, 0x88, 0xfd, 0x5f, 0x44, 0xc8, 0x4c } };
     typedef HRESULT (WINAPI *PFN_PL_CreateDXGIFactory1)(REFIID, void **);
 #endif
 
@@ -91,6 +92,75 @@ static void PerfDetectGpuName(char *out, int outSize)
 #endif
 }
 
+
+// OS version string, e.g. "Windows 11 (10.0.26100)". Uses RtlGetVersion: GetVersionEx lies
+// without an application manifest, the kernel entry point does not.
+static void PerfDetectOSVersion(char *out, int outSize)
+{
+    snprintf(out, outSize, "%s", PerfDetectOS());
+#if defined(_WIN32)
+    typedef LONG (WINAPI *PFN_PL_RtlGetVersion)(PRTL_OSVERSIONINFOW);
+    HMODULE hNt = GetModuleHandleA("ntdll.dll");
+    PFN_PL_RtlGetVersion pRtl = hNt? (PFN_PL_RtlGetVersion)(void *)GetProcAddress(hNt, "RtlGetVersion") : NULL;
+    if (pRtl != NULL)
+    {
+        RTL_OSVERSIONINFOW vi; memset(&vi, 0, sizeof(vi)); vi.dwOSVersionInfoSize = sizeof(vi);
+        if (pRtl(&vi) == 0)
+        {
+            // Build >= 22000 is the Windows 11 line despite the 10.0 version prefix
+            const char *name = (vi.dwMajorVersion == 10 && vi.dwBuildNumber >= 22000)? "Windows 11" :
+                               (vi.dwMajorVersion == 10)? "Windows 10" : "Windows";
+            snprintf(out, outSize, "%s (%lu.%lu.%lu)", name,
+                (unsigned long)vi.dwMajorVersion, (unsigned long)vi.dwMinorVersion, (unsigned long)vi.dwBuildNumber);
+        }
+    }
+#endif
+}
+
+// GPU driver version of the highest-VRAM adapter, e.g. "32.0.15.9597 (NVIDIA 595.97)".
+// The raw value is the DXGI user-mode-driver version; the NVIDIA marketing number is decoded
+// from its last five digits when the vendor matches.
+static void PerfDetectGpuDriver(char *out, int outSize)
+{
+    snprintf(out, outSize, "unknown");
+#if defined(_WIN32)
+    HMODULE hDxgi = LoadLibraryA("dxgi.dll");
+    if (hDxgi == NULL) return;
+    PFN_PL_CreateDXGIFactory1 pCreate = (PFN_PL_CreateDXGIFactory1)(void *)GetProcAddress(hDxgi, "CreateDXGIFactory1");
+    if (pCreate == NULL) return;
+    IDXGIFactory1 *factory = NULL;
+    if (FAILED(pCreate(&PL_IID_IDXGIFactory1, (void **)&factory)) || !factory) return;
+    SIZE_T bestVram = 0;
+    char gpu[512] = "";
+    LARGE_INTEGER best; best.QuadPart = 0;
+    for (UINT i = 0; ; i++)
+    {
+        IDXGIAdapter1 *adapter = NULL;
+        if (IDXGIFactory1_EnumAdapters1(factory, i, &adapter) != S_OK) break;
+        DXGI_ADAPTER_DESC1 desc; memset(&desc, 0, sizeof(desc));
+        IDXGIAdapter1_GetDesc1(adapter, &desc);
+        if (!(desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) && (desc.DedicatedVideoMemory >= bestVram))
+        {
+            LARGE_INTEGER umd;
+            if (SUCCEEDED(IDXGIAdapter1_CheckInterfaceSupport(adapter, &PL_IID_IDXGIDevice, &umd)))
+            {
+                bestVram = desc.DedicatedVideoMemory;
+                best = umd;
+                WideCharToMultiByte(CP_UTF8, 0, desc.Description, -1, gpu, sizeof(gpu), NULL, NULL);
+            }
+        }
+        IDXGIAdapter1_Release(adapter);
+    }
+    IDXGIFactory1_Release(factory);
+    if (best.QuadPart == 0) return;
+    unsigned a = (unsigned)(best.QuadPart >> 48) & 0xFFFF, b = (unsigned)(best.QuadPart >> 32) & 0xFFFF;
+    unsigned c = (unsigned)(best.QuadPart >> 16) & 0xFFFF, d = (unsigned)best.QuadPart & 0xFFFF;
+    if (strcmp(PerfVendorOf(gpu), "nvidia") == 0)
+        snprintf(out, outSize, "%u.%u.%u.%u (NVIDIA %u.%02u)", a, b, c, d, ((c%10)*100 + d/100), d%100);
+    else
+        snprintf(out, outSize, "%u.%u.%u.%u", a, b, c, d);
+#endif
+}
 // Fill 'out' with the effective label (see resolution order above). cfgLabel may be NULL/empty.
 static void PerfComputeLabel(const char *cfgLabel, char *out, int outSize)
 {

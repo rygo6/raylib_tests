@@ -4,8 +4,7 @@ rlgl_*/
 rlsw_*/
 rlvk_*/
 
-# Generated reports (labelled: report_<backend>_<os>_<vendor>.html, report_comparison_<os>_<vendor>.html)
-report_*.html
+# Reports ARE committed (labelled report_<backend>_<label>.html + report_comparison_<label>.html)
 
 # Run logs
 *.log
