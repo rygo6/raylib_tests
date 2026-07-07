@@ -32,7 +32,9 @@
 *       image_comparison_diff [configFile]              (default: image_comparison_rlvk.ini)
 *
 *   Config keys (rini, "key value" pairs, '#' comments):
-*       ref_dir, cmp_dir, diff_dir, report, tolerance, exclude (comma-separated names)
+*       ref_dir, cmp_dir, diff_dir, report, tolerance, exclude (comma-separated names),
+*       include (comma-separated names; when present, ONLY those examples are compared —
+*       the regression-subset mechanism, everything else is neither compared nor reported)
 *
 *   Exit code: 0 if all PASS (SKIP is not a failure), else 2.
 *
@@ -90,6 +92,9 @@ static int resultCount = 0;
 static char excludes[MAX_EXCLUDES][192];
 static int excludeCount = 0;
 
+static char includes[MAX_EXCLUDES][192];        // Subset filter: when non-empty, only these examples are compared
+static int includeCount = 0;
+
 static char allowNames[MAX_EXCLUDES][192];      // Examples with an expected-variability budget
 static long allowBudgets[MAX_EXCLUDES];         // Per-frame differing-pixel budget for each
 static int allowCount = 0;
@@ -103,8 +108,9 @@ static int spatialTolerance = 0;                // Spatial slack (px): a differi
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
-static void ParseExcludes(const char *csv);                 // Parse comma-separated exclude list
+static void ParseNameList(const char *csv, char (*list)[192], int *count);  // Parse a comma-separated name list
 static bool IsExcluded(const char *example);                // Check if an example is excluded
+static bool IsIncluded(const char *example);                // Check if an example passes the subset filter
 static void ParseAllow(const char *text);                   // Parse an 'allow <example> <maxPixels>' entry
 static long GetAllowance(const char *example);              // Per-frame pixel budget (0 = none)
 static bool BytesEqual(const char *a, const char *b);       // Compare two files byte-for-byte
@@ -134,10 +140,12 @@ int main(int argc, char **argv)
         snprintf(htmlOut, sizeof(htmlOut), "%s", rini_get_value_text_fallback(cfg, "report",   "report.html"));
         toleranceLevel = rini_get_value_fallback(cfg, "tolerance", DIFF_TOLERANCE);
         spatialTolerance = rini_get_value_fallback(cfg, "spatial_tolerance", 0);
-        // Collect every 'exclude' entry (rini keeps duplicate keys), so excludes can be listed
-        // one per line; each value may itself be a comma-separated list.
+        // Collect every 'exclude' and 'include' entry (rini keeps duplicate keys), so they can
+        // be listed one per line; each value may itself be a comma-separated list.
         for (unsigned int e = 0; e < cfg.count; e++)
-            if (strcmp(cfg.entries[e].key, "exclude") == 0) ParseExcludes(cfg.entries[e].text);
+            if (strcmp(cfg.entries[e].key, "exclude") == 0) ParseNameList(cfg.entries[e].text, excludes, &excludeCount);
+        for (unsigned int e = 0; e < cfg.count; e++)
+            if (strcmp(cfg.entries[e].key, "include") == 0) ParseNameList(cfg.entries[e].text, includes, &includeCount);
         // Collect every 'allow' entry: "<example> <maxDiffPixels>" per line
         for (unsigned int e = 0; e < cfg.count; e++)
             if (strcmp(cfg.entries[e].key, "allow") == 0) ParseAllow(cfg.entries[e].text);
@@ -149,8 +157,10 @@ int main(int argc, char **argv)
     if (!DirectoryExists(refDir)) { printf("ERROR: reference dir not found: %s\n", refDir); return 1; }
     if (!DirectoryExists(cmpDir)) { printf("ERROR: candidate dir not found: %s\n", cmpDir); return 1; }
     MakeDirectory(diffDir);
-    printf("Config: %s  |  tolerance=%d  |  spatial=%d  |  %d exclusion(s)  |  %d allowance(s)\n\n",
+    printf("Config: %s  |  tolerance=%d  |  spatial=%d  |  %d exclusion(s)  |  %d allowance(s)\n",
            configFile, toleranceLevel, spatialTolerance, excludeCount, allowCount);
+    if (includeCount > 0) printf("SUBSET: comparing only the %d example(s) listed by 'include' (regression subset)\n", includeCount);
+    printf("\n");
     //------------------------------------------------------------------------------------
 
     // Compare: walk reference example subfolders and match each frame against the candidate
@@ -162,6 +172,7 @@ int main(int argc, char **argv)
 
         char example[192];
         snprintf(example, sizeof(example), "%s", GetFileName(examples.paths[i]));
+        if ((includeCount > 0) && !IsIncluded(example)) continue;   // subset run: not selected, not reported
         bool excluded = IsExcluded(example);
 
         FilePathList frames = LoadDirectoryFiles(examples.paths[i]);
@@ -235,20 +246,20 @@ int main(int argc, char **argv)
 // Module Functions Definition
 //----------------------------------------------------------------------------------
 
-// Parse a comma-separated list of example names (from the rini "exclude" value) into excludes[]
-static void ParseExcludes(const char *csv)
+// Parse a comma-separated list of example names (a rini "exclude"/"include" value) into a name list
+static void ParseNameList(const char *csv, char (*list)[192], int *count)
 {
     if ((csv == NULL) || (csv[0] == '\0')) return;
 
     char buffer[1024];
     snprintf(buffer, sizeof(buffer), "%s", csv);
     char *token = strtok(buffer, ",");
-    while ((token != NULL) && (excludeCount < MAX_EXCLUDES))
+    while ((token != NULL) && (*count < MAX_EXCLUDES))
     {
         while ((*token == ' ') || (*token == '\t')) token++;    // trim leading space
         int len = (int)strlen(token);
         while ((len > 0) && ((token[len-1] == ' ') || (token[len-1] == '\t'))) token[--len] = '\0';
-        if (len > 0) snprintf(excludes[excludeCount++], 192, "%s", token);
+        if (len > 0) snprintf(list[(*count)++], 192, "%s", token);
         token = strtok(NULL, ",");
     }
 }
@@ -257,6 +268,13 @@ static void ParseExcludes(const char *csv)
 static bool IsExcluded(const char *example)
 {
     for (int i = 0; i < excludeCount; i++) if (strcmp(excludes[i], example) == 0) return true;
+    return false;
+}
+
+// Check if an example name passes the subset filter (empty include list = everything passes)
+static bool IsIncluded(const char *example)
+{
+    for (int i = 0; i < includeCount; i++) if (strcmp(includes[i], example) == 0) return true;
     return false;
 }
 

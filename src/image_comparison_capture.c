@@ -24,7 +24,9 @@
 *       outputDir    frames output root, overrides config       (config key: capture_output)
 *       configFile   rini config file                           (default: image_comparison_rlvk.ini)
 *
-*   Config keys (rini, "key value" pairs, '#' comments): examples_dir, frames, timeout_ms
+*   Config keys (rini, "key value" pairs, '#' comments): examples_dir, frames, timeout_ms,
+*   include (comma-separated example names; when present, ONLY those examples are run —
+*   the regression-subset mechanism, everything else is skipped even if built)
 *
 *   This tool is licensed under an unmodified zlib/libpng license, which is an OSI-certified,
 *   BSD-like license that allows static linking with closed source software
@@ -78,8 +80,18 @@
 #endif
 
 //----------------------------------------------------------------------------------
+// Global Variables Definition
+//----------------------------------------------------------------------------------
+#define MAX_INCLUDES    256
+
+static char includes[MAX_INCLUDES][192];    // Subset filter: when non-empty, only these examples are run
+static int includeCount = 0;
+
+//----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
+static void ParseNameList(const char *csv);                                 // Parse a comma-separated name list into includes[]
+static bool IsIncluded(const char *example);                                // Check if an example passes the subset filter
 static bool IsAbsPath(const char *p);                                       // Check if a path is absolute
 static void ResolvePath(const char *rel, char *out, int outSize);           // Resolve a path against the working dir
 static void SetEnvVar(const char *name, const char *value);                 // Set an environment variable (cross-platform)
@@ -108,6 +120,10 @@ int main(int argc, char **argv)
         timeoutMs = (unsigned int)rini_get_value_fallback(cfg, "timeout_ms", 15000);
         const char *cfgOut = rini_get_value_text_fallback(cfg, "capture_output", "rlgl");
         snprintf(outDir, sizeof(outDir), "%s", (argc > 1) ? argv[1] : cfgOut);
+        // Collect every 'include' entry (rini keeps duplicate keys), so the subset can be
+        // listed one per line; each value may itself be a comma-separated list.
+        for (unsigned int e = 0; e < cfg.count; e++)
+            if (strcmp(cfg.entries[e].key, "include") == 0) ParseNameList(cfg.entries[e].text);
         if (haveCfg) rini_unload(&cfg);
     }
 
@@ -125,8 +141,10 @@ int main(int argc, char **argv)
     MakeDirectory(absOut);
     SetEnvVar("RAYLIB_SHOT_FRAMES", frames);
 
-    printf("Capture\n  examples: %s\n  output:   %s\n  frames:   %s\n  timeout:  %u ms\n\n",
+    printf("Capture\n  examples: %s\n  output:   %s\n  frames:   %s\n  timeout:  %u ms\n",
            absExamples, absOut, frames, timeoutMs);
+    if (includeCount > 0) printf("  SUBSET:   only the %d example(s) listed by 'include' (regression subset)\n", includeCount);
+    printf("\n");
 
     // Record the render environment (version, machine, GPU, OS, driver) alongside the frames
     WriteEnvironment(absOut);
@@ -148,6 +166,7 @@ int main(int argc, char **argv)
 
             char name[256];
             snprintf(name, sizeof(name), "%s", GetFileNameWithoutExt(files.paths[f]));
+            if ((includeCount > 0) && !IsIncluded(name)) continue;  // subset run: not selected, skip
 
             char exePath[MAX_PATH_LEN];
             snprintf(exePath, sizeof(exePath), "%s/%s%s", categories.paths[c], name, EXE_SUFFIX);
@@ -199,6 +218,31 @@ int main(int argc, char **argv)
 //----------------------------------------------------------------------------------
 // Module Functions Definition
 //----------------------------------------------------------------------------------
+
+// Parse a comma-separated list of example names (a rini "include" value) into includes[]
+static void ParseNameList(const char *csv)
+{
+    if ((csv == NULL) || (csv[0] == '\0')) return;
+
+    char buffer[1024];
+    snprintf(buffer, sizeof(buffer), "%s", csv);
+    char *token = strtok(buffer, ",");
+    while ((token != NULL) && (includeCount < MAX_INCLUDES))
+    {
+        while ((*token == ' ') || (*token == '\t')) token++;    // trim leading space
+        int len = (int)strlen(token);
+        while ((len > 0) && ((token[len-1] == ' ') || (token[len-1] == '\t'))) token[--len] = '\0';
+        if (len > 0) snprintf(includes[includeCount++], 192, "%s", token);
+        token = strtok(NULL, ",");
+    }
+}
+
+// Check if an example name passes the subset filter (empty include list = everything passes)
+static bool IsIncluded(const char *example)
+{
+    for (int i = 0; i < includeCount; i++) if (strcmp(includes[i], example) == 0) return true;
+    return false;
+}
 
 // Check if p is an absolute path (POSIX "/...", or Windows "X:\..." / "\...")
 static bool IsAbsPath(const char *p)

@@ -22,6 +22,10 @@ an HTML visual diff report.
 Current state: the Vulkan backend passes the full suite against the GL baseline
 (578 bit-exact + 47 within allowances of 646 scenes, the rest excluded by design).
 
+Two run modes: the **full suite** (all built examples — the merge gate) and a **regression
+subset** (`bash image_equivalence/run_regression_rlvk.sh`, ~37 scenes covering every backend
+code path, ~2 min) for the inner development loop — see the suite README.
+
 ## [`performance/`](performance/README.md) — how fast does it do it?
 
 Full-speed frame-time and resource benchmarking. raylib is built with `PERFORMANCE_CAPTURE`,
@@ -35,6 +39,12 @@ OS, GPU, and driver provenance (`report_*_windows_nvidia.html` are committed).
 
 Current state: rlvk leads rlgl on 17 of 19 scenes (1.5×–7.5×); the two fragment-ALU-saturated
 scenes measure at parity (a ~2% NVIDIA driver-codegen residual, smaller than run noise).
+
+Two run modes here as well: the **full suite** (`run_all.sh`, all scenes × all backends in one
+machine-state window — the committed record) and a **regression subset**
+(`bash performance/run_regression_rlvk.sh`, 6 scenes compared against the committed
+same-machine rlvk capture with WARN/FAIL thresholds) — see the suite README for the
+cross-window caveats.
 
 ## Layout
 

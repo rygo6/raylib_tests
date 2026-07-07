@@ -6,3 +6,8 @@ diffs_rlvk/
 diffs_rlsw/
 report_rlvk.html
 report_rlsw.html
+
+# Regression-subset run outputs (see run_regression_rlvk.sh)
+rlvk_regression/
+diffs_rlvk_regression/
+report_rlvk_regression.html

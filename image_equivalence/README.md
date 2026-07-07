@@ -13,6 +13,8 @@ so rendering regressions (or differences between graphics backends) are caught d
   Makefile
 ./ (this folder)
   image_comparison_rlvk.ini           Vulkan backend vs rlgl_baseline (allowances for expected variability)
+  image_comparison_rlvk_regression.ini  ~37-scene regression subset of the rlvk suite (see below)
+  run_regression_rlvk.sh              one-command build + capture + diff of the regression subset
   image_comparison_rlsw.ini           software renderer vs its own rlsw_baseline (bit-exact)
   rlgl_baseline/<example>/frame_00NN.png  committed GL reference frames (+ environment.rini provenance)
   rlsw_baseline/<example>/frame_00NN.png  committed software-renderer reference frames
@@ -53,6 +55,34 @@ cd ../src && make         # -> image_comparison_capture, image_comparison_diff
 
 `image_comparison_diff` exits 0 when everything matches, else 2. Open `report.html` for a visual
 diff (reference / candidate / amplified difference per mismatch).
+
+## Regression subset vs full suite
+
+Two ways to run the rlvk comparison:
+
+- **Full suite** (the merge gate): build **all** examples and run with `image_comparison_rlvk.ini`
+  as shown above — every baseline scene is compared (~646 scenes, ~15 min including builds).
+- **Regression subset** (the inner development loop): a curated ~37-scene subset chosen so every
+  backend code path (batching, line raster, MSAA/sample locations, scissor, render textures, MRT,
+  readback, blend modes, pixel formats, cubemaps, GPU skinning, CPU-anim buffer updates,
+  instancing, multi-texture push descriptors, depth passes, stereo, uniform UBOs) is exercised at
+  least once — a change that breaks a path fails here in ~2 minutes:
+
+  ```sh
+  bash run_regression_rlvk.sh     # build rlvk lib + subset examples, capture, diff
+  ```
+
+The subset lives in the `include` lines of `image_comparison_rlvk_regression.ini`, which drive
+both tools: capture runs only the listed examples (others are skipped even if built) and diff
+compares only them — a listed scene missing from the candidate is still a FAIL. Without any
+`include` lines a config compares everything, which is what the full-suite configs do. Regression
+artifacts are kept separate (`rlvk_regression/`, `diffs_rlvk_regression/`,
+`report_rlvk_regression.html`, all gitignored).
+
+A green subset does **not** replace the full suite — run the full comparison before committing
+baseline-affecting changes or declaring a backend milestone. The regression config duplicates the
+tolerance/allowance settings of the scenes it includes; when `image_comparison_rlvk.ini` changes,
+mirror the change there.
 
 ## Notes
 
