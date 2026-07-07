@@ -1,62 +1,45 @@
-# raylib_tests — deterministic image-equivalence tests
+# raylib_tests
 
-Reproducible, cycle-based screenshot capture and comparison for raylib examples. Renders a set
-of examples to fixed frames (0, 10, 30) and diffs a candidate set against a committed baseline,
-so rendering regressions (or differences between graphics backends) are caught deterministically.
+Test harnesses for raylib's interchangeable graphics backends — **rlgl** (OpenGL 3.3, the
+default), **rlsw** (CPU software rasterizer), and **rlvk** (Vulkan 1.4). Two complementary
+suites answer the two questions that matter for a backend: *does it render the same pixels?*
+and *how fast does it do it?*
+
+Both suites expect the **raylib repo as a sibling** (`../raylib`) and drive its stock examples
+as test scenes; measurement hooks live inside raylib behind opt-in compile flags, so the
+examples themselves are unmodified.
+
+## [`image_equivalence/`](image_equivalence/README.md) — does it render the same pixels?
+
+Deterministic screenshot capture and comparison. raylib is built with
+`DETERMINISTIC_IMAGE_COMPARISON_CAPTURE`, which makes rendering a pure function of the frame
+counter (fixed virtual clock, fixed RNG seed, neutralized input); each example is captured at
+fixed frames (0, 10, 30) and diffed against a committed baseline — the GL backend's output for
+rlvk, its own prior output for rlsw. Exact by default, with small documented per-scene
+allowances where GPU rounding makes bit-exactness impossible. Output: per-scene PASS/FAIL and
+an HTML visual diff report.
+
+Current state: the Vulkan backend passes the full suite against the GL baseline
+(578 bit-exact + 47 within allowances of 646 scenes, the rest excluded by design).
+
+## [`performance/`](performance/README.md) — how fast does it do it?
+
+Full-speed frame-time and resource benchmarking. raylib is built with `PERFORMANCE_CAPTURE`,
+which neutralizes the frame cap / vsync / present-sync and self-measures every frame: frame
+time (min / median / p95 / p99 / max, sustained FPS), CPU utilization, RAM working set, and
+per-process VRAM. A curated set of 19 scenes (real examples plus purpose-built benches:
+idle overhead, 8000 draw calls, instancing, fragment-bound stress) runs 3×10 s per backend,
+all backends captured back-to-back in one session so machine-state drift cannot bias the
+comparison. Output: one HTML report per backend plus a cross-backend comparison, stamped with
+OS, GPU, and driver provenance (`report_*_windows_nvidia.html` are committed).
+
+Current state: rlvk leads rlgl on 17 of 19 scenes (1.5×–7.5×); the two fragment-ALU-saturated
+scenes measure at parity (a ~2% NVIDIA driver-codegen residual, smaller than run noise).
 
 ## Layout
 
 ```
-src/                                  C99 tools (link raylib) + rini.h (vendored config lib)
-  image_comparison_capture.c          run examples, capture frames + record environment.rini
-  image_comparison_diff.c             compare candidate vs baseline, print PASS/FAIL, write report.html
-  Makefile
-image_equivalence/
-  image_comparison_rlvk.ini           Vulkan backend vs rlgl_baseline (allowances for expected variability)
-  image_comparison_rlsw.ini           software renderer vs its own rlsw_baseline (bit-exact)
-  rlgl_baseline/<example>/frame_00NN.png  committed GL reference frames (+ environment.rini provenance)
-  rlsw_baseline/<example>/frame_00NN.png  committed software-renderer reference frames
-  rlvk/, rlsw_candidate/               per-run candidate captures (not committed)
-  report_rlvk.html, report_rlsw.html   per-backend HTML reports (not committed)
+src/                image-equivalence tools (C99, link raylib)
+image_equivalence/  configs, committed baselines (git LFS), candidate captures, reports
+performance/        performance tools + configs, committed HTML reports, capture data
 ```
-
-PNGs are stored via **git LFS** (see `.gitattributes`).
-
-## Requirements
-
-This repo expects the **raylib repo as a sibling** (`../raylib`) built with the deterministic
-capture flag, which makes rendering a pure function of the frame counter (fixed 60 fps virtual
-clock, fixed RNG seed, neutralized mouse input, in-engine screenshot+exit hook):
-
-```sh
-# In the raylib repo:
-cd ../raylib/src
-make CC='gcc -pipe -DDETERMINISTIC_IMAGE_COMPARISON_CAPTURE'          # deterministic libraylib.a
-cd ../examples && make CC='gcc -pipe'                                 # build examples against it
-```
-
-## Build the tools
-
-```sh
-cd src && make            # -> image_comparison_capture, image_comparison_diff
-```
-
-## Run
-
-```sh
-cd image_equivalence
-../src/image_comparison_capture baseline    # (re)generate the baseline set + environment.rini
-../src/image_comparison_capture rlgl        # capture a candidate set
-../src/image_comparison_diff                # compare -> PASS/FAIL per scene + report.html
-```
-
-`image_comparison_diff` exits 0 when everything matches, else 2. Open `report.html` for a visual
-diff (reference / candidate / amplified difference per mismatch).
-
-## Notes
-
-- A small per-channel **tolerance** (config `tolerance`) absorbs unavoidable 1-ulp GPU rounding.
-- A few examples are **excluded** (config `exclude`) because they render real-world state no
-  frame clock can fix: `shapes_digital_clock` / `shapes_clock_of_clocks` (system wall-clock) and
-  `audio_raw_stream` / `audio_stream_callback` (live audio thread).
-- All paths in the config are relative and resolved at run time — nothing absolute is hardcoded.
