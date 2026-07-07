@@ -20,7 +20,9 @@ allowances where GPU rounding makes bit-exactness impossible. Output: per-scene 
 an HTML visual diff report.
 
 Current state: the Vulkan backend passes the full suite against the GL baseline
-(578 bit-exact + 47 within allowances of 646 scenes, the rest excluded by design).
+(539 bit-exact + 86 within allowances of 646 scenes, the rest excluded by design; aliased
+rendering is bit-exact, MSAA scenes carry measured AA-edge allowances since rlvk uses
+standard Vulkan MSAA rather than replicating GL's sample pattern and resolve).
 
 Two run modes: the **full suite** (all built examples — the merge gate) and a **regression
 subset** (`bash image_equivalence/run_regression_rlvk.sh`, ~37 scenes covering every backend
