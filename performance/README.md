@@ -6,7 +6,7 @@ Full-speed frame-time and resource benchmarking for the three raylib graphics ba
 |---------|--------------|------------|
 | **rlgl** | `GRAPHICS_API_OPENGL_33` | OpenGL 3.3 (the default hardware backend) |
 | **rlsw** | `GRAPHICS_API_OPENGL_SOFTWARE` | CPU software rasterizer (`external/rlsw.h`) |
-| **rlvk** | `GRAPHICS_API_VULKAN_14` | Vulkan 1.4 (`rlvk.h`) |
+| **rlvk** | `GRAPHICS_API_VULKAN_14` | Vulkan 1.3 (`rlvk.h`; the selector keeps its historical _14 name) |
 
 Each curated example is opened and run **at full speed** (frame cap / vsync / present-sync all
 neutralized) for `duration_ms` (default 10 s), repeated `runs` times (default 3). Every run the
@@ -111,8 +111,12 @@ Two ways to answer "did my rlvk change cost performance?":
 **Interpret with care:** the committed baseline was captured in a *different machine-state
 window* than your candidate, so WARN-level deltas are noise candidates — re-measure the flagged
 scene back-to-back against a fresh build of the pre-change commit before concluding anything.
-FAIL-level deltas have always been real. Regression captures (`rlvk_regression_<label>/`) are
-gitignored; never commit them or mix them into cross-backend reports.
+Microsecond-scale scenes (baseline median < 0.15 ms) drift by tens of percent *between windows*
+(+38% was measured on an unmodified build), so their frame-time verdicts are capped at a
+non-fatal `CHECK-us` — only a same-window A/B can pass judgment on them. Heavier scenes'
+FAIL-level deltas have so far always been real. Regression captures
+(`rlvk_regression_<label>/`) are gitignored; never commit them or mix them into cross-backend
+reports.
 
 ## Multi-machine data (platform x vendor labelling)
 

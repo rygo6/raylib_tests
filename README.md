@@ -1,7 +1,7 @@
 # raylib_tests
 
 Test harnesses for raylib's interchangeable graphics backends — **rlgl** (OpenGL 3.3, the
-default), **rlsw** (CPU software rasterizer), and **rlvk** (Vulkan 1.4). Two complementary
+default), **rlsw** (CPU software rasterizer), and **rlvk** (Vulkan 1.3). Two complementary
 suites answer the two questions that matter for a backend: *does it render the same pixels?*
 and *how fast does it do it?*
 

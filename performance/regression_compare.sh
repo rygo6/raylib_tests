@@ -8,8 +8,10 @@
 #
 # Thresholds: median frame time > +10% = WARN, > +25% = FAIL (exit 1); RAM/VRAM peak > +15% = WARN.
 # The baseline usually comes from a DIFFERENT machine-state window than the candidate, so treat
-# WARN-level deltas as noise candidates and re-measure back-to-back before concluding anything;
-# only large (FAIL-level) deltas are trustworthy across windows.
+# WARN-level deltas as noise candidates and re-measure back-to-back before concluding anything.
+# Microsecond-scale scenes (baseline median < 0.15 ms, e.g. bench_idle on a fast GPU) drift by
+# tens of percent BETWEEN windows (measured: +38% on an unmodified build); their frame-time
+# verdicts are capped at CHECK-us (non-fatal) - confirm with a same-window A/B, never cross-window.
 
 set -u
 BASE="${1:-}"; CAND="${2:-}"
@@ -55,11 +57,14 @@ $(awk -v bm="$bMed" -v cm="$cMed" -v br="$bRam" -v cr="$cRam" -v bv="$bVram" -v 
     if (dr > 15 || dv > 15) v = "WARN-mem"
     if (dm > 10) v = "WARN-time"
     if (dm > 25) v = "FAIL"
+    # Microsecond-scale scenes drift tens of percent between machine-state windows:
+    # cap their frame-time verdict at CHECK-us (non-fatal), confirm via same-window A/B
+    if ((bm < 0.150) && ((v == "FAIL") || (v == "WARN-time"))) v = "CHECK-us"
     printf "%+.1f %+.1f %+.1f %s", dm, dr, dv, v
 }')
 EOF
   printf "%-34s %12s %12s %8s %8s %8s  %s\n" "$ex" "$bMed" "$cMed" "$dMed" "$dRam" "$dVram" "$verdict"
-  case "$verdict" in FAIL) fail=$((fail+1));; WARN*) warn=$((warn+1));; esac
+  case "$verdict" in FAIL) fail=$((fail+1));; WARN*|CHECK*) warn=$((warn+1));; esac
 done
 
 echo
