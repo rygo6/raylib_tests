@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 cd /c/Developer/raylib_tests/performance
-echo "===== [$(date +%H:%M:%S)] CAPTURE rlgl (already built) ====="
+echo "===== [$(date +%H:%M:%S)] BUILD rlgl ====="
+bash build_backend.sh rlgl 2>&1 | grep -vE "^gcc |^ar "
+echo "===== [$(date +%H:%M:%S)] CAPTURE rlgl ====="
 ./src/performance_capture.exe rlgl performance_rlgl.ini 2>&1 | grep -vE "^INFO:|^WARNING:"
 echo "===== [$(date +%H:%M:%S)] BUILD rlsw ====="
 bash build_backend.sh rlsw 2>&1 | grep -vE "^gcc |^ar "
