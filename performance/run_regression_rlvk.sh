@@ -4,13 +4,13 @@
 #
 # Builds the rlvk backend with PERFORMANCE_CAPTURE (via build_backend.sh), captures the 6-scene
 # regression subset (performance_rlvk_regression.ini, 3 x 10 s per scene), and compares it
-# against the committed full-suite rlvk capture for this machine (rlvk_<label>/) with
+# against this machine's last full-suite rlvk capture (rlvk_<label>/, local artifact) with
 # regression_compare.sh.
 #
-# The committed baseline was captured in a different machine-state window, so WARN-level deltas
-# are noise candidates (re-measure back-to-back before concluding); FAIL-level deltas (>25%
-# median frame time) are real enough to investigate. The full cross-backend story stays with
-# run_all.sh; this is the inner-loop check for backend development.
+# The baseline was captured in a different machine-state window, so WARN-level deltas are
+# noise candidates (re-measure back-to-back before concluding); FAIL-level deltas (>25%
+# median frame time) on heavy scenes are real enough to investigate. The full cross-backend
+# story stays with run_all.sh; this is the inner-loop check for backend development.
 #
 # Exit code: 0 = no FAIL-level regression, non-zero otherwise.
 
@@ -36,7 +36,7 @@ CAND=${CAND%/}
 [ -n "$CAND" ] || { echo "ERROR: no capture produced"; exit 1; }
 LABEL=${CAND#rlvk_regression_}
 BASE="rlvk_$LABEL"
-[ -d "$BASE" ] || { echo "ERROR: no committed baseline $BASE for this machine"; exit 2; }
+[ -d "$BASE" ] || { echo "ERROR: no local full-suite capture $BASE for this machine (run run_all.sh first)"; exit 2; }
 
-echo "=== compare against committed baseline ==="
+echo "=== compare against the last full-suite capture ==="
 bash regression_compare.sh "$BASE" "$CAND"

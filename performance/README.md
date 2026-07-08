@@ -49,7 +49,7 @@ performance_rlvk.ini
 performance_rlvk_regression.ini  6-scene rlvk regression subset (see "Regression subset" below)
 build_backend.sh          build raylib (a backend) + the curated examples with PERFORMANCE_CAPTURE
 run_all.sh                build + capture all three backends, then generate every report
-run_regression_rlvk.sh    build rlvk + capture the regression subset + compare vs committed baseline
+run_regression_rlvk.sh    build rlvk + capture the regression subset + compare vs the last local campaign
 regression_compare.sh     flag frame-time/RAM/VRAM regressions between two same-backend captures
 rlgl/ rlsw/ rlvk/         per-run captures: <example>/run_<n>.rini + environment.rini  (not committed)
 report_rlgl.html          per-backend reports (not committed)
@@ -91,9 +91,10 @@ that has no captures, so you can report on whatever subset you have run.
 
 Two ways to answer "did my rlvk change cost performance?":
 
-- **Full suite** (the committed record): `run_all.sh` — all 19 curated scenes on all three
-  backends, back-to-back in one machine-state window, producing the committed labelled trees
-  and cross-backend reports. Use it for milestone numbers and any rlgl-vs-rlvk claim.
+- **Full suite** (the reference record): `run_all.sh` — all 19 curated scenes on all three
+  backends, back-to-back in one machine-state window, producing the labelled capture trees
+  (local artifacts; only the HTML reports are committed) and the cross-backend reports. Use it
+  for milestone numbers and any rlgl-vs-rlvk claim.
 - **Regression subset** (the inner development loop, ~5 min):
 
   ```sh
@@ -103,12 +104,12 @@ Two ways to answer "did my rlvk change cost performance?":
   Builds rlvk, captures the 6 scenes of `performance_rlvk_regression.ini` (each guarding a
   distinct cost center: idle overhead, draw-call/pipeline-bind cost, instancing, 2D batch
   volume, fragment-bound present cost, a real mixed 3D scene; same 3 x 10 s methodology), then
-  runs `regression_compare.sh` against the committed full-suite rlvk capture for this machine
+  runs `regression_compare.sh` against this machine's last full-suite rlvk capture
   (`rlvk_<label>/`). Per scene it compares the representative median frame time (median of run
   medians, matching `performance_report`) plus peak RAM/VRAM: > +10% median frame time or
   > +15% memory = WARN, > +25% frame time = FAIL (non-zero exit).
 
-**Interpret with care:** the committed baseline was captured in a *different machine-state
+**Interpret with care:** the baseline was captured in a *different machine-state
 window* than your candidate, so WARN-level deltas are noise candidates — re-measure the flagged
 scene back-to-back against a fresh build of the pre-change commit before concluding anything.
 Microsecond-scale scenes (baseline median < 0.15 ms) drift by tens of percent *between windows*
