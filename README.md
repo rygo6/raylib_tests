@@ -37,10 +37,23 @@ per-process VRAM. A curated set of 19 scenes (real examples plus purpose-built b
 idle overhead, 8000 draw calls, instancing, fragment-bound stress) runs 3×10 s per backend,
 all backends captured back-to-back in one session so machine-state drift cannot bias the
 comparison. Output: one HTML report per backend plus a cross-backend comparison, stamped with
-OS, GPU, and driver provenance (`report_*_windows_nvidia.html` are committed).
+OS, GPU, and driver provenance (`report_*_windows_nvidia.html` and `report_*_linux_amd.html`
+are committed).
 
-Current state: rlvk leads rlgl on 17 of 19 scenes (1.5×–7.5×); the two fragment-ALU-saturated
-scenes measure at parity (a ~2% NVIDIA driver-codegen residual, smaller than run noise).
+Current state, **Windows / RTX 4090 / NVIDIA 595.97**: rlvk leads rlgl on 17 of 19 scenes
+(1.5×–7.5×); the two fragment-ALU-saturated scenes measure at parity (a ~2% NVIDIA
+driver-codegen residual, smaller than run noise).
+
+Current state, **Linux / RX 7900 XTX / Mesa RADV 26.1.6** (2026-08-01): rlvk leads on 15 of 19
+scenes, topping out at 2.8× (8000 draw calls) and 2.1× (waving cubes) rather than the 7.5× seen
+on NVIDIA — the AMD GL driver is much stronger on draw submission, so there is less to win.
+It loses nothing meaningfully: the four sub-parity scenes are first-person maze 0.89× (+9 µs),
+skybox 0.95× (+5 µs) and idle 0.93× (+3 µs) — all below the 0.15 ms baseline at which this
+suite stops issuing frame-time verdicts — plus raymarching at 0.99×, statistical parity and the
+same fragment-ALU-saturated class that ties on NVIDIA. Memory inverts the NVIDIA result: rlvk
+uses ~33% less RAM (116 vs 172 MB typical) and less VRAM on nearly every scene, because Mesa's
+Vulkan runtime is lighter than its GL one, whereas NVIDIA's is heavier. Same-window capture,
+XWayland present path.
 
 Two run modes here as well: the **full suite** (`run_all.sh`, all scenes × all backends in one
 machine-state window — the committed record) and a **regression subset**

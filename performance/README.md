@@ -32,9 +32,18 @@ performance sibling of `DETERMINISTIC_IMAGE_COMPARISON_CAPTURE`):
 - `rlvk.h` — under `PERFORMANCE_CAPTURE`: selects an uncapped present mode (IMMEDIATE, else
   MAILBOX) instead of the vsync-locked FIFO default.
 
-VRAM is read through DXGI `QueryVideoMemoryInfo`, which is backend-agnostic — OpenGL, Vulkan, and
-the software renderer are all measured identically (software naturally reports ~0 VRAM). All
-Windows measurement entry points are resolved dynamically, so example link lines are unchanged.
+Every metric source is backend-agnostic — OpenGL, Vulkan and the software renderer are measured
+identically (software naturally reports ~0 VRAM):
+
+| | Windows | Linux |
+|---|---|---|
+| clock | `QueryPerformanceCounter` | `clock_gettime(CLOCK_MONOTONIC)` |
+| CPU | `GetProcessTimes` | `/proc/self/stat` utime+stime |
+| RAM | psapi working set | `/proc/self/statm` resident pages |
+| VRAM | DXGI `QueryVideoMemoryInfo` (local segment) | DRM `fdinfo` `drm-resident-vram`, summed over the process's DRM clients |
+
+All Windows measurement entry points are resolved dynamically and the Linux ones are plain `/proc`
+reads, so example link lines are unchanged on both.
 
 ## Layout
 
@@ -60,29 +69,33 @@ report_comparison.html    collated cross-backend comparison (not committed)
 
 ## Requirements
 
-The **raylib repo as a sibling** (`../raylib`), MinGW-w64 gcc, and — for rlvk — the Vulkan SDK
-with `VULKAN_SDK` set. Backends share one `libraylib.a`, so each is built and captured fully
-before the next.
+The **raylib repo as a sibling** (`../raylib`) and gcc — MinGW-w64 on Windows, the system gcc on
+Linux. For rlvk: the Vulkan loader plus headers (Windows: the SDK with `VULKAN_SDK` set; Linux:
+`vulkan-headers` and a driver ICD), and `shaderc` at run time for custom-shader scenes. Backends
+share one `libraylib.a`, so each is built and captured fully before the next.
 
 ## Build the tools
 
 ```sh
-cd src && mingw32-make      # -> performance_capture, performance_report
+cd src && make              # -> performance_capture, performance_report  (mingw32-make on Windows)
 ```
 
 ## Run everything
 
 ```sh
 bash run_all.sh             # builds + captures rlgl, rlsw, rlvk, then writes all reports
+bash run_all.sh rlgl rlvk   # or just the backends you name, still one machine-state window
 ```
 
 ## Run one backend
 
 ```sh
-bash build_backend.sh rlvk                              # build raylib(rlvk) + curated examples
-./src/performance_capture.exe rlvk performance_rlvk.ini  # 3 x 10 s per example -> rlvk/
-./src/performance_report.exe                             # (re)generate all reports found
+bash build_backend.sh rlvk                          # build raylib(rlvk) + curated examples
+./src/performance_capture rlvk performance_rlvk.ini  # 3 x 10 s per example -> rlvk_<label>/
+./src/performance_report                             # (re)generate all reports found
 ```
+
+(Add `.exe` to the tool names on Windows.)
 
 `performance_report` with no arguments reads the three standard configs and skips any backend
 that has no captures, so you can report on whatever subset you have run.
@@ -125,17 +138,16 @@ Outputs are labelled `<os>_<vendor>` so results from different machines coexist 
 `rlvk_windows_nvidia/`, `report_rlgl_linux_amd.html`, `report_comparison_windows_amd.html`, etc.
 
 The label resolves as (both tools agree, so one machine is self-consistent):
-1. `RAYLIB_PERF_LABEL` env var (explicit; **use this on Linux/CI**)
+1. `RAYLIB_PERF_LABEL` env var (explicit override)
 2. `label` key in the backend `.ini`
 3. auto — `<os>` from the build target, `<vendor>` from the GPU name (NVIDIA/AMD/Intel).
-   GPU detection is via DXGI on Windows; on Linux set `RAYLIB_PERF_LABEL` (e.g. `linux_amd`).
+   GPU detection is via DXGI on Windows and a `dlopen`'d Vulkan probe on Linux, so both platforms
+   auto-resolve; the probe also supplies the adapter name, driver version and VRAM total that the
+   reports print as provenance.
 
 The four target combinations are `windows_nvidia`, `windows_amd`, `linux_nvidia`, `linux_amd`.
-On each machine just run `run_all.sh` (or set `RAYLIB_PERF_LABEL` first on Linux); the labelled
-trees and reports can be committed side by side for cross-platform/vendor comparison.
-
-> NOTE: Linux resource sampling (CPU/RAM/VRAM) in `rcore_performance_capture.c` is currently
-> Windows-only; frame-time still works everywhere. Linux VRAM/CPU/RAM sampling is TODO.
+On each machine just run `run_all.sh`; the labelled trees and reports can be committed side by
+side for cross-platform/vendor comparison.
 
 ## Notes
 
