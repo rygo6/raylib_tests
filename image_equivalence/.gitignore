@@ -11,3 +11,12 @@ report_rlsw.html
 rlvk_regression/
 diffs_rlvk_regression/
 report_rlvk_regression.html
+
+# Ad-hoc analysis outputs (alternate candidate sets and their reports/diffs). The committed
+# artifacts stay: *_baseline reference sets only.
+rlvk_optoff/
+rlgl_linux_amd/
+diffs_*/
+report_rlvk_optoff*.html
+report_rlvk_vs_*.html
+report_spirvopt_ab.html

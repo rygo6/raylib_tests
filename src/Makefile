@@ -8,7 +8,9 @@
 
 CC        ?= gcc
 RAYLIB_SRC ?= ../../raylib/src
-CFLAGS     = -std=c99 -Wall -O2 -pipe -I$(RAYLIB_SRC)
+# _DEFAULT_SOURCE: -std=c99 is strict ISO C, which hides the POSIX declarations the non-Windows
+# process path needs (fork/execl/chdir/gethostname/kill/nanosleep)
+CFLAGS     = -std=c99 -D_DEFAULT_SOURCE -Wall -O2 -pipe -I$(RAYLIB_SRC)
 LDFLAGS    = -L$(RAYLIB_SRC)
 
 ifeq ($(OS),Windows_NT)
