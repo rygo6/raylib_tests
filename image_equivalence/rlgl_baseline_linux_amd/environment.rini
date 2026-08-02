@@ -1,0 +1,6 @@
+raylib_version                         "6.1-dev"                        # raylib version used to render
+machine                                "7800X3D-7900XTX-arch"           # host machine name
+os                                     "Linux"                          # operating system
+gpu                                    "AMD Radeon RX 7900 XTX (radeonsi, navi31, ACO, DRM 3.64, 7.1.5-arch1-2)" # graphics card (GL_RENDERER)
+gpu_vendor                             "AMD"                            # graphics vendor (GL_VENDOR)
+graphics_driver                        "4.6 (Core Profile) Mesa 26.1.6-arch1.1" # GL_VERSION string (includes driver)
