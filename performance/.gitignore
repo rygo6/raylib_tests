@@ -9,6 +9,8 @@ rlvk_*/
 # Run logs
 *.log
 
-# Built tools
+# Built tools (extensionless on Linux/macOS)
 src/*.exe
 src/*.o
+src/performance_capture
+src/performance_report

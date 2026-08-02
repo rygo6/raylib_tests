@@ -1,17 +1,32 @@
 #!/usr/bin/env bash
-cd /c/Developer/raylib_tests/performance
-echo "===== [$(date +%H:%M:%S)] BUILD rlgl ====="
-bash build_backend.sh rlgl 2>&1 | grep -vE "^gcc |^ar "
-echo "===== [$(date +%H:%M:%S)] CAPTURE rlgl ====="
-./src/performance_capture.exe rlgl performance_rlgl.ini 2>&1 | grep -vE "^INFO:|^WARNING:"
-echo "===== [$(date +%H:%M:%S)] BUILD rlsw ====="
-bash build_backend.sh rlsw 2>&1 | grep -vE "^gcc |^ar "
-echo "===== [$(date +%H:%M:%S)] CAPTURE rlsw ====="
-./src/performance_capture.exe rlsw performance_rlsw.ini 2>&1 | grep -vE "^INFO:|^WARNING:"
-echo "===== [$(date +%H:%M:%S)] BUILD rlvk ====="
-bash build_backend.sh rlvk 2>&1 | grep -vE "^gcc |^ar "
-echo "===== [$(date +%H:%M:%S)] CAPTURE rlvk ====="
-./src/performance_capture.exe rlvk performance_rlvk.ini 2>&1 | grep -vE "^INFO:|^WARNING:"
+#
+# run_all.sh [backend ...]
+#
+# Builds and captures every requested backend BACK-TO-BACK in one machine-state window (the only
+# way the cross-backend comparison is valid - absolute frame times drift between windows), then
+# writes every report. With no arguments it does all three: rlgl, rlsw, rlvk.
+#
+# Paths and tooling resolve from the platform, so this runs on Windows (MSYS/MinGW) and Linux.
+
+set -u
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$HERE" || exit 1
+
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) EXT=".exe" ;;
+  *)                    EXT="" ;;
+esac
+
+BACKENDS=("$@")
+[ ${#BACKENDS[@]} -eq 0 ] && BACKENDS=(rlgl rlsw rlvk)
+
+for backend in "${BACKENDS[@]}"; do
+  echo "===== [$(date +%H:%M:%S)] BUILD $backend ====="
+  bash build_backend.sh "$backend" 2>&1 | grep -vE "^gcc |^ar "
+  echo "===== [$(date +%H:%M:%S)] CAPTURE $backend ====="
+  "./src/performance_capture$EXT" "$backend" "performance_$backend.ini" 2>&1 | grep -vE "^INFO:|^WARNING:"
+done
+
 echo "===== [$(date +%H:%M:%S)] REPORTS ====="
-./src/performance_report.exe 2>&1
+"./src/performance_report$EXT" 2>&1
 echo "===== [$(date +%H:%M:%S)] ALL DONE ====="

@@ -9,14 +9,26 @@
 #
 #   rlgl  -> GRAPHICS_API_OPENGL_33       (default OpenGL)
 #   rlsw  -> GRAPHICS_API_OPENGL_SOFTWARE  (software rasterizer)
-#   rlvk  -> GRAPHICS_API_VULKAN_14        (Vulkan; needs VULKAN_SDK)
+#   rlvk  -> GRAPHICS_API_VULKAN_14        (Vulkan; needs the Vulkan loader + headers)
+#
+# Runs on Windows (MSYS/MinGW) and Linux; the raylib tree, make binary, executable suffix and
+# link libraries all resolve from the platform rather than being hardcoded.
 
 set -u
 BACKEND="${1:-}"
-RAYLIB="/c/Developer/raylib"
+
+# Repo layout: this script lives in <tests>/performance, raylib is a sibling of <tests>
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RAYLIB="${RAYLIB_DIR:-$(cd "$HERE/../.." && pwd)/raylib}"
 SRC="$RAYLIB/src"
 EXDIR="$RAYLIB/examples"
-MAKE=mingw32-make
+
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) HOST_OS=windows; EXT=".exe"; MAKE=${MAKE:-mingw32-make} ;;
+  *)                    HOST_OS=linux;   EXT="";     MAKE=${MAKE:-make} ;;
+esac
+
+[ -d "$SRC" ] || { echo "ERROR: raylib source not found at $SRC (set RAYLIB_DIR)"; exit 1; }
 
 # Curated example set (keep in sync with performance_*.ini)
 EXAMPLES=(
@@ -45,14 +57,21 @@ case "$BACKEND" in
   rlgl) GRAPHICS=GRAPHICS_API_OPENGL_33;       EX_LDLIBS="" ;;
   rlsw) GRAPHICS=GRAPHICS_API_OPENGL_SOFTWARE; EX_LDLIBS="" ;;
   rlvk) GRAPHICS=GRAPHICS_API_VULKAN_14
-        if [ -z "${VULKAN_SDK:-}" ]; then echo "ERROR: VULKAN_SDK not set"; exit 1; fi
-        VKLIB=$(cygpath -m "$VULKAN_SDK" 2>/dev/null || echo "${VULKAN_SDK//\\//}")   # Windows path, forward slashes
-        EX_LDLIBS="-L$VKLIB/Lib -lraylib -lgdi32 -lwinmm -luser32 -lkernel32 -lvulkan-1" ;;
+        if [ "$HOST_OS" = windows ]; then
+          if [ -z "${VULKAN_SDK:-}" ]; then echo "ERROR: VULKAN_SDK not set"; exit 1; fi
+          VKLIB=$(cygpath -m "$VULKAN_SDK" 2>/dev/null || echo "${VULKAN_SDK//\\//}")   # Windows path, forward slashes
+          EX_LDLIBS="-L$VKLIB/Lib -lraylib -lgdi32 -lwinmm -luser32 -lkernel32 -lvulkan-1"
+        else
+          # The Vulkan loader replaces -lGL. -lX11 must be explicit: rcore.c's clipboard path
+          # calls Xlib directly, and without -lGL nothing else pulls libX11 in transitively
+          EX_LDLIBS="-lraylib -lvulkan -lX11 -lm -lpthread -ldl -lrt"
+        fi ;;
   *) echo "usage: $0 <rlgl|rlsw|rlvk>"; exit 2 ;;
 esac
 
 echo "==================================================================="
 echo " Building raylib ($BACKEND / $GRAPHICS) with PERFORMANCE_CAPTURE"
+echo " raylib: $RAYLIB   host: $HOST_OS   make: $MAKE"
 echo "==================================================================="
 
 cd "$SRC" || exit 1
@@ -70,14 +89,20 @@ echo "--- building ${#EXAMPLES[@]} examples ---"
 cd "$EXDIR" || exit 1
 built=0; failed=0
 for ex in "${EXAMPLES[@]}"; do
-  rm -f "$EXDIR/$ex.exe"                      # force relink against the new backend lib
+  rm -f "$EXDIR/$ex$EXT"                      # force relink against the new backend lib
   if [ -n "$EX_LDLIBS" ]; then
-    $MAKE "$ex" GRAPHICS="$GRAPHICS" LDLIBS="$EX_LDLIBS" >/dev/null 2>&1
+    $MAKE "$ex" GRAPHICS="$GRAPHICS" LDLIBS="$EX_LDLIBS" >"/tmp/rlbuild_$$.log" 2>&1
   else
-    $MAKE "$ex" GRAPHICS="$GRAPHICS" >/dev/null 2>&1
+    $MAKE "$ex" GRAPHICS="$GRAPHICS" >"/tmp/rlbuild_$$.log" 2>&1
   fi
-  if [ -f "$EXDIR/$ex.exe" ]; then built=$((built+1)); echo "  ok   $ex"; else failed=$((failed+1)); echo "  FAIL $ex"; fi
+  if [ -f "$EXDIR/$ex$EXT" ]; then
+    built=$((built+1)); echo "  ok   $ex"
+  else
+    # Log the first error line before moving on: silent failures cost a debugging session once
+    failed=$((failed+1)); echo "  FAIL $ex"; grep -m2 -E 'error|Error|undefined' "/tmp/rlbuild_$$.log" | sed 's/^/       /'
+  fi
 done
+rm -f "/tmp/rlbuild_$$.log"
 
 echo "-------------------------------------------------------------------"
 echo " $BACKEND: built $built, failed $failed"

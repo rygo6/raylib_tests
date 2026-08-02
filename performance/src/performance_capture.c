@@ -45,6 +45,14 @@
 
     static const GUID PC_IID_IDXGIFactory1 = { 0x770aae78, 0xf26f, 0x4dba, { 0xa8, 0x29, 0x25, 0x3c, 0x83, 0xd1, 0xb3, 0x87 } };
     typedef HRESULT (WINAPI *PFN_PC_CreateDXGIFactory1)(REFIID, void **);
+#else
+    #include <unistd.h>         // fork(), execl(), chdir(), getcwd(), gethostname(), usleep()
+    #include <sys/wait.h>       // waitpid(), WNOHANG
+    #include <sys/stat.h>       // mkdir()
+    #include <sys/types.h>
+    #include <signal.h>         // kill(), SIGTERM, SIGKILL
+    #include <dirent.h>         // opendir()/readdir() over /proc for the lingering-process guard
+    #include <errno.h>
 #endif
 
 #define MAX_PATH_LEN    2048
@@ -73,7 +81,7 @@ static void MakeDir(const char *p)
 #if defined(_WIN32)
     CreateDirectoryA(p, NULL);
 #else
-    char cmd[MAX_PATH_LEN]; snprintf(cmd, sizeof(cmd), "mkdir -p '%s'", p); system(cmd);
+    mkdir(p, 0755);
 #endif
 }
 
@@ -158,6 +166,38 @@ static int KillLingering(const char *exeName)
     CloseHandle(snap);
     return found;
 }
+#else
+// Kill every running process whose executable is this exact test binary and wait until each is
+// gone. Returns how many were found. Same guarantee as the Windows path: a prior test that
+// failed to close must never overlap the next one (overlapping tests contend for GPU/CPU and
+// corrupt all measurements). Identity is /proc/<pid>/exe, so same-named binaries from other
+// trees are left alone.
+static int KillLingering(const char *absExe)
+{
+    DIR *proc = opendir("/proc");
+    if (proc == NULL) return 0;
+
+    int found = 0;
+    for (struct dirent *entry = readdir(proc); entry != NULL; entry = readdir(proc))
+    {
+        if ((entry->d_name[0] < '0') || (entry->d_name[0] > '9')) continue;
+        pid_t pid = (pid_t)strtol(entry->d_name, NULL, 10);
+        if ((pid <= 0) || (pid == getpid())) continue;
+
+        char link[MAX_PATH_LEN], target[MAX_PATH_LEN];
+        snprintf(link, sizeof(link), "/proc/%d/exe", (int)pid);
+        ssize_t n = readlink(link, target, sizeof(target) - 1);
+        if (n <= 0) continue;
+        target[n] = '\0';
+        if (strcmp(target, absExe) != 0) continue;
+
+        kill(pid, SIGKILL);
+        for (int waited = 0; (waited < 5000) && (kill(pid, 0) == 0); waited += 50) usleep(50*1000);
+        found++;
+    }
+    closedir(proc);
+    return found;
+}
 #endif
 
 // Spawn absExe from workDir, killing it after timeoutMs. 0 = self-exited, 1 = timed out, -1 = spawn failed.
@@ -202,9 +242,49 @@ static int RunWithTimeout(const char *absExe, const char *workDir, unsigned int 
     CloseHandle(pi.hThread);
     return rc;
 #else
-    (void)workDir; (void)timeoutMs;
-    char cmd[MAX_PATH_LEN]; snprintf(cmd, sizeof(cmd), "cd '%s' && '%s'", workDir, absExe);
-    return (system(cmd) == 0) ? 0 : -1;
+    // Guard: no stale instance of this test may be running from a previous (crashed) session
+    int stale = KillLingering(absExe);
+    if (stale > 0) printf("    [guard] killed %d lingering instance(s) of %s before launch\n", stale, absExe);
+
+    pid_t pid = fork();
+    if (pid < 0) return -1;
+    if (pid == 0)
+    {
+        // Child: its own process group, so a timeout kill takes any process it spawned with it
+        setpgid(0, 0);
+        if (chdir(workDir) != 0) _exit(127);
+        execl(absExe, absExe, (char *)NULL);
+        _exit(127);
+    }
+    setpgid(pid, pid);                          // also set in the parent, whichever wins the race
+
+    int rc = 0, status = 0;
+    unsigned int waited = 0;
+    for (;;)
+    {
+        pid_t r = waitpid(pid, &status, WNOHANG);
+        if (r == pid) break;                    // exited on its own
+        if ((r < 0) && (errno != EINTR)) return -1;
+        if (waited >= timeoutMs)
+        {
+            kill(-pid, SIGKILL);                // whole process group
+            kill(pid, SIGKILL);
+            rc = 1;
+            break;
+        }
+        usleep(20*1000);
+        waited += 20;
+    }
+
+    // VERIFY the test is gone before the caller may start the next one
+    if (rc == 1)
+    {
+        unsigned int reaped = 0;
+        while ((waitpid(pid, &status, WNOHANG) == 0) && (reaped < 10000)) { usleep(50*1000); reaped += 50; }
+        if (reaped >= 10000) printf("    [guard] WARNING: %s did not die within 10 s of termination\n", absExe);
+    }
+    else if (WIFEXITED(status) && (WEXITSTATUS(status) == 127)) return -1;   // exec/chdir failed
+    return rc;
 #endif
 }
 
@@ -246,6 +326,13 @@ static void WriteEnvironment(const char *outDir, const char *backend, const char
             }
         }
     }
+#elif defined(__linux__)
+    char machine[256] = "unknown"; gethostname(machine, sizeof(machine) - 1);
+    const char *os = "Linux";
+
+    const PerfLinuxGpuInfo *probe = PerfLinuxProbeGpu();
+    snprintf(gpu, sizeof(gpu), "%s", probe->name);
+    vramTotalMB = probe->vramTotalMB;
 #else
     char machine[256] = "unknown"; const char *os = "unknown";
 #endif
@@ -257,9 +344,9 @@ static void WriteEnvironment(const char *outDir, const char *backend, const char
     char osVersion[128]; PerfDetectOSVersion(osVersion, sizeof(osVersion));
     char gpuDriver[128]; PerfDetectGpuDriver(gpuDriver, sizeof(gpuDriver));
     rini_set_value_text(&md, "os", os, "operating system");
-    rini_set_value_text(&md, "os_version", osVersion, "operating system version (RtlGetVersion)");
-    rini_set_value_text(&md, "gpu_driver", gpuDriver, "GPU user-mode driver version (DXGI CheckInterfaceSupport)");
-    rini_set_value_text(&md, "gpu", gpu, "graphics card (DXGI adapter description)");
+    rini_set_value_text(&md, "os_version", osVersion, "operating system version");
+    rini_set_value_text(&md, "gpu_driver", gpuDriver, "GPU driver name and version");
+    rini_set_value_text(&md, "gpu", gpu, "graphics card (adapter description)");
     rini_set_value(&md, "gpu_vram_total_mb", (int)(vramTotalMB + 0.5), "dedicated GPU memory, MB");
     rini_set_value(&md, "duration_ms", durationMs, "per-run measurement window, ms");
     rini_set_value(&md, "warmup_ms", warmupMs, "per-run warm-up excluded from stats, ms");

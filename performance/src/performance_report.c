@@ -331,7 +331,7 @@ static void WriteComparisonReport(BackendStats *bk, int nb)
     ComparisonTable(f, bk, nb, "Average frame time, ms (lower is better)", "Mean per-frame wall time.", M_AVG, "%.3f");
     ComparisonTable(f, bk, nb, "CPU utilization, %", "Average process CPU as percent of the whole machine.", M_CPU, "%.1f");
     ComparisonTable(f, bk, nb, "RAM, MB", "Average working-set memory.", M_RAM, "%.1f");
-    ComparisonTable(f, bk, nb, "GPU VRAM, MB", "Average per-process video memory (DXGI).", M_VRAM, "%.1f");
+    ComparisonTable(f, bk, nb, "GPU VRAM, MB", "Average per-process video memory.", M_VRAM, "%.1f");
 
     fprintf(f, "</body></html>");
     fclose(f);
