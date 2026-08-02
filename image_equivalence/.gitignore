@@ -19,3 +19,11 @@ diffs_*/
 report_rlvk_optoff*.html
 report_rlvk_vs_*.html
 report_spirvopt_ab.html
+report_ctl_*.html
+report_measure.html
+report_lavapipe.html
+report_llvmpipe.html
+report_software_stack.html
+report_rlvk_linux_amd.html
+rlvk_lavapipe/
+rlgl_llvmpipe/
