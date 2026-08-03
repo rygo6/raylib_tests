@@ -19,10 +19,10 @@ endif
 
 all: performance_capture$(EXT) performance_report$(EXT)
 
-performance_capture$(EXT): performance_capture.c rini.h
+performance_capture$(EXT): performance_capture.c rini.h perf_label.h
 	$(CC) -o $@ performance_capture.c $(CFLAGS)
 
-performance_report$(EXT): performance_report.c rini.h
+performance_report$(EXT): performance_report.c rini.h perf_label.h
 	$(CC) -o $@ performance_report.c $(CFLAGS)
 
 clean:

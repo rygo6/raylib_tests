@@ -104,8 +104,18 @@ static const PerfLinuxGpuInfo *PerfLinuxProbeGpu(void)
                     if (mb > localMB) localMB = mb;
                 }
 
-            if (localMB > bestVram)
+            // Device TYPE outranks heap size: a software rasterizer (lavapipe, type CPU)
+            // advertises a system-RAM-sized "device-local" heap that beats any real GPU's
+            // VRAM, which mislabelled this machine linux_unknown the moment vulkan-swrast
+            // was installed. Prefer discrete > integrated > others > CPU, VRAM as tiebreak.
+            int rank = 1;
+            if (props.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)   rank = 4;
+            else if (props.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) rank = 3;
+            else if (props.properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_CPU)       rank = 2;
+            static int bestRank = 0;
+            if ((rank > bestRank) || ((rank == bestRank) && (localMB > bestVram)))
             {
+                bestRank = rank;
                 bestVram = localMB;
                 info.vramTotalMB = localMB;
                 snprintf(info.name, sizeof(info.name), "%s", props.properties.deviceName);

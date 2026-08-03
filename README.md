@@ -44,13 +44,12 @@ Current state, **Windows / RTX 4090 / NVIDIA 595.97**: rlvk leads rlgl on 17 of 
 (1.5×–7.5×); the two fragment-ALU-saturated scenes measure at parity (a ~2% NVIDIA
 driver-codegen residual, smaller than run noise).
 
-Current state, **Linux / RX 7900 XTX / Mesa RADV 26.1.6** (2026-08-01): rlvk leads on 15 of 19
-scenes, topping out at 2.8× (8000 draw calls) and 2.1× (waving cubes) rather than the 7.5× seen
-on NVIDIA — the AMD GL driver is much stronger on draw submission, so there is less to win.
-It loses nothing meaningfully: the four sub-parity scenes are first-person maze 0.89× (+9 µs),
-skybox 0.95× (+5 µs) and idle 0.93× (+3 µs) — all below the 0.15 ms baseline at which this
-suite stops issuing frame-time verdicts — plus raymarching at 0.99×, statistical parity and the
-same fragment-ALU-saturated class that ties on NVIDIA. Memory inverts the NVIDIA result: rlvk
+Current state, **Linux / RX 7900 XTX / Mesa RADV 26.1.6** (2026-08-03, includes the merged-draw
+path and spirv-opt): rlvk leads on 16 of 19 scenes, topping out at 4.2× (8000 draw calls —
+2.8× before draw merging), 2.1× (waving cubes) and 1.8× (mixed stress). It loses nothing
+meaningfully: first-person maze 0.81× (+19 µs) and camera_free 0.96× (+4 µs) are below the
+0.15 ms baseline at which this suite stops issuing frame-time verdicts, and raymarching is
+1.00× — the fragment-ALU-saturated class that also ties on NVIDIA. Memory inverts the NVIDIA result: rlvk
 uses ~33% less RAM (116 vs 172 MB typical) and less VRAM on nearly every scene, because Mesa's
 Vulkan runtime is lighter than its GL one, whereas NVIDIA's is heavier. Same-window capture,
 XWayland present path.
