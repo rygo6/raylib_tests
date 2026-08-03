@@ -132,6 +132,33 @@ FAIL-level deltas have so far always been real. Regression captures
 (`rlvk_regression_<label>/`) are gitignored; never commit them or mix them into cross-backend
 reports.
 
+## Build flags: what the numbers are measured at
+
+The lib builds at `-O2` (raylib upstream ships `-O1` on desktop; this fork changed it after a
+measured A/B - see the src/Makefile comment). Two further rungs are measured and available as
+an opt-in campaign configuration, but are NOT the committed-report default:
+
+| config (RX 7900 XTX / RADV, medians) | drawcalls | stress | cubes | notes |
+|---|---|---|---|---|
+| `-O1` (old upstream default) | 1.294 | 8.53 | 1.042 | |
+| `-O2` (the shipped default)  | 0.842 | 7.65 | 0.891 | bit-identical output, full-suite verified |
+| `-O2 -flto`                  | 0.623 | 7.32 | 0.926 | cross-TU inlining; +4% on batch fill |
+| `-O2 -flto` + PGO            | 0.640 | **7.16** | **0.884** | PGO fixes LTO's batch regression |
+
+Recipe for the LTO+PGO build (train on the curated scenes, then rebuild with the profile):
+
+```sh
+# 1. instrumented:  CUSTOM_CFLAGS='-O2 -flto -ffat-lto-objects -fprofile-generate -fprofile-update=atomic'
+# 2. run the curated scenes once (profiles land as src/*.gcda)
+# 3. optimized:     CUSTOM_CFLAGS='-O2 -flto -ffat-lto-objects -fprofile-use -fprofile-correction'
+#    (link examples with -flto both times; plain ar works thanks to -ffat-lto-objects)
+```
+
+Switching the committed reports to the LTO+PGO config is a policy decision (it changes what
+the numbers mean and doubles campaign build time); the data above is the case for it.
+CAVEAT: changing CUSTOM_CFLAGS does NOT invalidate make's object cache - always `rm -f *.o
+libraylib.a *.gcda` in src/ when flags change, or the archive silently mixes codegen.
+
 ## Multi-machine data (platform x vendor labelling)
 
 Outputs are labelled `<os>_<vendor>` so results from different machines coexist and compare:
