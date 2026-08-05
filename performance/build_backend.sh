@@ -54,7 +54,9 @@ EXAMPLES=(
 )
 
 case "$BACKEND" in
-  rlgl) GRAPHICS=GRAPHICS_API_OPENGL_33;       EX_LDLIBS="" ;;
+  rlgl) GRAPHICS=GRAPHICS_API_OPENGL_33
+        # Explicit libs so the PGO link flags can append (the Makefile default is otherwise used)
+        [ "$HOST_OS" = linux ] && EX_LDLIBS="-lraylib -lGL -lm -lpthread -ldl -lrt -lX11" || EX_LDLIBS="" ;;
   rlsw) GRAPHICS=GRAPHICS_API_OPENGL_SOFTWARE; EX_LDLIBS="" ;;
   rlvk) GRAPHICS=GRAPHICS_API_VULKAN_14
         if [ "$HOST_OS" = windows ]; then
@@ -74,35 +76,65 @@ echo " Building raylib ($BACKEND / $GRAPHICS) with PERFORMANCE_CAPTURE"
 echo " raylib: $RAYLIB   host: $HOST_OS   make: $MAKE"
 echo "==================================================================="
 
-cd "$SRC" || exit 1
-$MAKE clean >/dev/null 2>&1
-if ! $MAKE PLATFORM=PLATFORM_DESKTOP GRAPHICS="$GRAPHICS" CC='gcc -pipe -DPERFORMANCE_CAPTURE' RAYLIB_LIBTYPE=STATIC 2>&1 | tail -3; then
-  echo "ERROR: raylib lib build failed"; exit 1
+# CAMPAIGN CONFIG (2026-08-04, policy switch): every backend builds -O2 -flto + PGO, the
+# measured best-balanced configuration (vs plain -O2: drawcalls -24%, stress -8%, and PGO
+# cures LTO's +4% batch-fill regression). Two passes: instrumented build + a short training
+# run over five scenes, then a profile-guided rebuild. Applied uniformly to every backend so
+# cross-backend ratios stay fair. RAYLIB_PERF_NO_PGO=1 falls back to plain -O2.
+TRAIN=(others/bench_drawcalls others/performance_stress_test models/models_waving_cubes others/bench_instanced models/models_loading)
+LTO="-flto -ffat-lto-objects"
+
+build_lib(){ # $1 = extra CUSTOM_CFLAGS
+  cd "$SRC" || exit 1
+  rm -f ./*.o libraylib.a   # flags change between passes: never trust make's object cache
+  if ! $MAKE PLATFORM=PLATFORM_DESKTOP GRAPHICS="$GRAPHICS" CC='gcc -pipe -DPERFORMANCE_CAPTURE' \
+       CUSTOM_CFLAGS="$1" RAYLIB_LIBTYPE=STATIC 2>&1 | tail -2; then
+    echo "ERROR: raylib lib build failed"; exit 1
+  fi
+  [ -f "$SRC/libraylib.a" ] || { echo "ERROR: libraylib.a not produced"; exit 1; }
+  gcc -pipe $1 -c "$SRC/rcore_performance_capture.c" -o "$SRC/rcore_performance_capture.o" || exit 1
+  ar rcs "$SRC/libraylib.a" "$SRC/rcore_performance_capture.o" || exit 1
+}
+
+build_examples(){ # $1 = extra link flags   $2 = quiet
+  cd "$EXDIR" || exit 1
+  built=0; failed=0
+  for ex in "${EXAMPLES[@]}"; do
+    rm -f "$EXDIR/$ex$EXT"                      # force relink against the new backend lib
+    if [ -n "$EX_LDLIBS" ]; then
+      $MAKE "$ex" GRAPHICS="$GRAPHICS" LDLIBS="$EX_LDLIBS $1" >"/tmp/rlbuild_$$.log" 2>&1
+    else
+      $MAKE "$ex" GRAPHICS="$GRAPHICS" CUSTOM_LDLIBS="$1" >"/tmp/rlbuild_$$.log" 2>&1
+    fi
+    if [ -f "$EXDIR/$ex$EXT" ]; then
+      built=$((built+1)); [ -n "${2:-}" ] || echo "  ok   $ex"
+    else
+      failed=$((failed+1)); echo "  FAIL $ex"; grep -m2 -E 'error|Error|undefined' "/tmp/rlbuild_$$.log" | sed 's/^/       /'
+    fi
+  done
+  rm -f "/tmp/rlbuild_$$.log"
+}
+
+if [ -n "${RAYLIB_PERF_NO_PGO:-}" ]; then
+  build_lib ""
+  build_examples ""
+else
+  echo "--- PGO pass 1: instrumented build + training (5 scenes x 3 s) ---"
+  find "$SRC" "$EXDIR" -maxdepth 2 -name '*.gcda' -delete 2>/dev/null
+  mkdir -p /tmp/pgo_train
+  build_lib "-O2 $LTO -fprofile-generate -fprofile-update=atomic"
+  build_examples "-fprofile-generate" quiet
+  for ex in "${TRAIN[@]}"; do
+    d=$(dirname "$ex"); b=$(basename "$ex")
+    [ -f "$EXDIR/$ex$EXT" ] || continue
+    (cd "$EXDIR/$d" && RAYLIB_PERF_DIR=/tmp/pgo_train RAYLIB_PERF_RUN=9 RAYLIB_PERF_DURATION_MS=3000 \
+       RAYLIB_PERF_WARMUP_MS=400 timeout 60 "./$b$EXT" >/dev/null 2>&1)
+  done
+  echo "--- PGO pass 2: profile-guided rebuild ---"
+  build_lib "-O2 $LTO -fprofile-use -fprofile-correction -Wno-missing-profile"
+  build_examples "-fprofile-use -fprofile-correction -Wno-missing-profile"
+  find "$SRC" "$EXDIR" -maxdepth 2 -name '*.gcda' -delete 2>/dev/null
 fi
-[ -f "$SRC/libraylib.a" ] || { echo "ERROR: libraylib.a not produced"; exit 1; }
-
-echo "--- archiving measurement unit into libraylib.a ---"
-gcc -pipe -c "$SRC/rcore_performance_capture.c" -o "$SRC/rcore_performance_capture.o" || exit 1
-ar rcs "$SRC/libraylib.a" "$SRC/rcore_performance_capture.o" || exit 1
-
-echo "--- building ${#EXAMPLES[@]} examples ---"
-cd "$EXDIR" || exit 1
-built=0; failed=0
-for ex in "${EXAMPLES[@]}"; do
-  rm -f "$EXDIR/$ex$EXT"                      # force relink against the new backend lib
-  if [ -n "$EX_LDLIBS" ]; then
-    $MAKE "$ex" GRAPHICS="$GRAPHICS" LDLIBS="$EX_LDLIBS" >"/tmp/rlbuild_$$.log" 2>&1
-  else
-    $MAKE "$ex" GRAPHICS="$GRAPHICS" >"/tmp/rlbuild_$$.log" 2>&1
-  fi
-  if [ -f "$EXDIR/$ex$EXT" ]; then
-    built=$((built+1)); echo "  ok   $ex"
-  else
-    # Log the first error line before moving on: silent failures cost a debugging session once
-    failed=$((failed+1)); echo "  FAIL $ex"; grep -m2 -E 'error|Error|undefined' "/tmp/rlbuild_$$.log" | sed 's/^/       /'
-  fi
-done
-rm -f "/tmp/rlbuild_$$.log"
 
 echo "-------------------------------------------------------------------"
 echo " $BACKEND: built $built, failed $failed"

@@ -143,7 +143,7 @@ an opt-in campaign configuration, but are NOT the committed-report default:
 | `-O1` (old upstream default) | 1.294 | 8.53 | 1.042 | |
 | `-O2` (the shipped default)  | 0.842 | 7.65 | 0.891 | bit-identical output, full-suite verified |
 | `-O2 -flto`                  | 0.623 | 7.32 | 0.926 | cross-TU inlining; +4% on batch fill |
-| `-O2 -flto` + PGO            | 0.640 | **7.16** | **0.884** | PGO fixes LTO's batch regression |
+| `-O2 -flto` + PGO            | 0.640 | **7.16** | **0.884** | PGO fixes LTO's batch regression; THE CAMPAIGN CONFIG since 2026-08-04 |
 
 Recipe for the LTO+PGO build (train on the curated scenes, then rebuild with the profile):
 
@@ -154,8 +154,10 @@ Recipe for the LTO+PGO build (train on the curated scenes, then rebuild with the
 #    (link examples with -flto both times; plain ar works thanks to -ffat-lto-objects)
 ```
 
-Switching the committed reports to the LTO+PGO config is a policy decision (it changes what
-the numbers mean and doubles campaign build time); the data above is the case for it.
+The committed reports use the LTO+PGO config since 2026-08-04 (user policy decision;
+build_backend.sh implements the two-pass build for every backend uniformly, and
+RAYLIB_PERF_NO_PGO=1 falls back to plain -O2). The default -O2 remains what a plain
+`make` user gets; the reports measure the tuned campaign configuration.
 CAVEAT: changing CUSTOM_CFLAGS does NOT invalidate make's object cache - always `rm -f *.o
 libraylib.a *.gcda` in src/ when flags change, or the archive silently mixes codegen.
 
