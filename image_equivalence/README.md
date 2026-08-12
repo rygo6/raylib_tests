@@ -94,7 +94,7 @@ with Apple clang; rlvk links Homebrew's Vulkan loader):
 cd ../../raylib/src && make clean && make CC='cc -pipe -DDETERMINISTIC_IMAGE_COMPARISON_CAPTURE'
 cd ../examples && make CC='cc -pipe'
 cd ../../raylib_tests/image_equivalence
-../src/image_comparison_capture rlgl_baseline_macos image_comparison_rlvk_macos.ini
+../src/image_comparison_capture rlgl_baseline_macos image_comparison_rlvk_macos_moltenvk.ini
 
 # candidate: rebuild raylib as rlvk, relink the examples, capture, diff
 cd ../../raylib/src && make clean && \
@@ -104,18 +104,21 @@ cd ../examples && make GRAPHICS=GRAPHICS_API_VULKAN_14 CC='cc -pipe' \
           -framework Cocoa -framework IOKit -framework CoreAudio -framework CoreVideo \
           -framework Metal -framework QuartzCore'
 cd ../../raylib_tests/image_equivalence
-../src/image_comparison_capture rlvk_macos image_comparison_rlvk_macos.ini
-../src/image_comparison_diff image_comparison_rlvk_macos.ini
+../src/image_comparison_capture rlvk_macos_moltenvk image_comparison_rlvk_macos_moltenvk.ini
+../src/image_comparison_diff image_comparison_rlvk_macos_moltenvk.ini
 ```
 
 macOS compares against a **same-machine Apple GL baseline** (`rlgl_baseline_macos/`, generated
 locally, not committed) rather than the committed Windows baseline: cross-driver pixel variance
 exceeds cross-backend variance, so only a same-machine GL capture is a valid reference. Configs:
-`image_comparison_rlvk_macos.ini` (full suite) and `image_comparison_rlvk_macos_regression.ini`
+`image_comparison_rlvk_macos_moltenvk.ini` (full suite) and `image_comparison_rlvk_macos_moltenvk_regression.ini`
 (subset) carry macOS-measured allowances for the stable Apple-GL-vs-Metal rasterization/ULP
 tie-break class (validated by two controls: GL-vs-GL and rlvk-vs-rlvk recaptures are bit-exact,
 the latter via `image_comparison_rlvk_selfcheck.ini`). Compute scenes are excluded on macOS —
-Apple GL tops out at 4.1, so no GL compute reference exists. Current state (2026-08-11, Apple
+Apple GL tops out at 4.1, so no GL compute reference exists. Because macOS can host more than
+one Vulkan-on-Metal ICD (MoltenVK, Mesa's KosmicKrisp), macOS rlvk artifacts name the ICD
+(`rlvk_macos_moltenvk/`, `rlvk_macos_kosmickrisp/`, matching configs/diffs/reports); select the
+driver at capture time with `VK_DRIVER_FILES=<icd.json>`. Current state (2026-08-11, Apple
 M5 / MoltenVK 1.4.2): **457 bit-exact + 158 tolerated + 0 fail** of 637 frames, 22 skipped by
 design. Keep the display awake (`caffeinate -dimsu`) for unattended captures.
 

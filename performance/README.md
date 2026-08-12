@@ -79,8 +79,14 @@ share one `libraylib.a`, so each is built and captured fully before the next.
 
 Runs with the stock scripts: `bash run_all.sh rlgl rlvk` (rlsw untested there). Prerequisites are
 Homebrew `molten-vk`, `vulkan-loader`, `vulkan-headers` and `shaderc`; the label auto-resolves to
-`macos_apple` through a MoltenVK probe (the probe enables `VK_KHR_portability_enumeration`, or the
-device would be invisible). Builds run at plain `-O2` — Apple clang has no gcda-flow PGO, so
+`macos_apple` through a Vulkan probe (the probe enables `VK_KHR_portability_enumeration`, or the
+device would be invisible). Because macOS can host more than one Vulkan-on-Metal ICD (MoltenVK,
+Mesa's KosmicKrisp), **rlvk captures pin the ICD in the label**: `performance_rlvk_moltenvk.ini`
+and `performance_rlvk_kosmickrisp.ini` set `label macos_moltenvk` / `macos_kosmickrisp`, and the
+ICD is selected at run time with `VK_DRIVER_FILES=<icd.json>` (MoltenVK:
+`/opt/homebrew/opt/molten-vk/share/vulkan/icd.d/MoltenVK_icd.json`; KosmicKrisp:
+`/opt/homebrew/opt/mesa/share/vulkan/icd.d/kosmickrisp_mesa_icd.aarch64.json`). rlgl does not go
+through a Vulkan ICD, so its captures keep the machine label `macos_apple`. Builds run at plain `-O2` — Apple clang has no gcda-flow PGO, so
 `build_backend.sh` forces the no-PGO path and both backends stay at identical flags. Keep the
 display awake (`caffeinate -dimsu`) for unattended runs: display sleep fails GLFW window creation.
 
@@ -235,9 +241,11 @@ The label resolves as (both tools agree, so one machine is self-consistent):
    reports print as provenance.
 
 The target combinations are `windows_nvidia`, `windows_amd`, `linux_nvidia`, `linux_amd`, and
-`macos_apple` (the probe opts into portability enumeration, so MoltenVK's device is visible).
-On each machine just run `run_all.sh`; the labelled trees and reports can be committed side by
-side for cross-platform/vendor comparison.
+`macos_apple` (the probe opts into portability enumeration, so a portability device is visible).
+On macOS, rlvk results additionally pin the Vulkan-on-Metal ICD in the label —
+`macos_moltenvk` / `macos_kosmickrisp` (see the macOS section above). On each machine just run
+`run_all.sh`; the labelled trees and reports can be committed side by side for
+cross-platform/vendor comparison.
 
 ## Notes
 

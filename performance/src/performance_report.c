@@ -268,11 +268,24 @@ static double MetricVal(RunStats *a, Metric m)
 // true if higher is better for this metric
 static bool HigherBetter(Metric m) { return (m == M_FPS); }
 
+// true if two compared backends share a name (e.g. rlvk under two Vulkan ICDs) so column
+// headers must append the label to stay distinguishable
+static bool DuplicateBackendNames(BackendStats *bk, int nb)
+{
+    for (int i = 0; i < nb; i++) for (int j = i+1; j < nb; j++) if (strcmp(bk[i].backend, bk[j].backend) == 0) return true;
+    return false;
+}
+
 static void ComparisonTable(FILE *f, BackendStats *bk, int nb, const char *title, const char *caption, Metric m, const char *fmt)
 {
+    bool dup = DuplicateBackendNames(bk, nb);
     fprintf(f, "<h2>%s</h2><div class=wrap><table><caption>%s</caption>", title, caption);
     fprintf(f, "<tr><th class=name>Example</th>");
-    for (int k = 0; k < nb; k++) fprintf(f, "<th>%s</th>", bk[k].backend);
+    for (int k = 0; k < nb; k++)
+    {
+        if (dup) fprintf(f, "<th>%s (%s)</th>", bk[k].backend, bk[k].label);
+        else fprintf(f, "<th>%s</th>", bk[k].backend);
+    }
     fprintf(f, "</tr>");
 
     // Rows follow the first backend's example order
@@ -320,8 +333,13 @@ static void WriteComparisonReport(BackendStats *bk, int nb)
 
     fprintf(f, "<!doctype html><html><head><meta charset=utf-8><meta name=viewport content=\"width=device-width,initial-scale=1\"><title>raylib perf - comparison</title>%s</head><body>", CSS);
     fprintf(f, "<h1>raylib performance &mdash; backend comparison</h1>");
+    bool dup = DuplicateBackendNames(bk, nb);
     fprintf(f, "<p class=env>");
-    for (int k = 0; k < nb; k++) fprintf(f, "%s<b>%s</b>", (k?" &nbsp;vs&nbsp; ":""), bk[k].backend);
+    for (int k = 0; k < nb; k++)
+    {
+        if (dup) fprintf(f, "%s<b>%s</b> (%s, %s)", (k?" &nbsp;vs&nbsp; ":""), bk[k].backend, bk[k].label, bk[k].gpuDriver);
+        else fprintf(f, "%s<b>%s</b>", (k?" &nbsp;vs&nbsp; ":""), bk[k].backend);
+    }
     fprintf(f, " &nbsp;|&nbsp; <b>GPU</b> %s (%d MB) &nbsp;|&nbsp; <b>Driver</b> %s &nbsp;|&nbsp; <b>OS</b> %s &nbsp;|&nbsp; %d runs &times; %d ms full speed</p>",
         bk[0].gpu, bk[0].vramTotalMB, bk[0].gpuDriver, bk[0].osVersion, bk[0].runs, bk[0].durationMs);
     fprintf(f, "<p class=sub>Green = best backend for that example/metric, red = worst. Frame time &amp; FPS are the representative run; software (rlsw) has no GPU so its VRAM is ~0. Shader-heavy examples may not execute custom shaders on the software backend.</p>");

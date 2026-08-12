@@ -31,7 +31,7 @@ measured allowances + 0 fail** of 637 frames; 22 skipped by design (wall-clock/l
 scenes plus compute, which has no GL reference on macOS — Apple GL tops out at 4.1). Both
 backends are capture-deterministic on this machine (GL-vs-GL and rlvk-vs-rlvk controls
 bit-exact at tolerance 0); every tolerated diff is a stable Apple-GL-vs-Metal rasterization
-or shader-ULP tie-break, catalogued per scene in `image_comparison_rlvk_macos.ini`.
+or shader-ULP tie-break, catalogued per scene in `image_comparison_rlvk_macos_moltenvk.ini`.
 
 Two run modes: the **full suite** (all built examples — the merge gate) and a **regression
 subset** (`bash image_equivalence/run_regression_rlvk.sh`, ~37 scenes covering every backend
@@ -47,7 +47,9 @@ idle overhead, 8000 draw calls, instancing, fragment-bound stress) runs 3×10 s 
 all backends captured back-to-back in one session so machine-state drift cannot bias the
 comparison. Output: one HTML report per backend plus a cross-backend comparison, stamped with
 OS, GPU, and driver provenance (`report_*_windows_nvidia.html`, `report_*_linux_amd.html` and
-`report_*_macos_apple.html` are committed).
+the macOS reports are committed; on macOS the rlvk label names the Vulkan-on-Metal ICD —
+`report_rlvk_macos_moltenvk.html`, `report_comparison_macos_moltenvk.html` — while rlgl keeps
+`report_rlgl_macos_apple.html`).
 
 Current state, **Windows / RTX 4090 / NVIDIA 595.97**: rlvk leads rlgl on 17 of 19 scenes
 (1.5×–7.5×); the two fragment-ALU-saturated scenes measure at parity (a ~2% NVIDIA
