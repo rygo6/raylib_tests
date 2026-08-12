@@ -189,6 +189,7 @@ static const char *CSS =
 "tr:last-child td{border-bottom:none}tr:hover td{background:#1b1f28}"
 ".best{color:var(--good);font-weight:700}.worst{color:var(--bad)}"
 ".sub{color:var(--dim);font-size:12px}.na{color:var(--dim)}"
+".callout{border-left:4px solid var(--acc);background:rgba(128,128,128,0.08);padding:10px 14px;margin:14px 0;font-size:13px;line-height:1.5}.callout b{color:var(--acc)}"
 "details{margin:6px 0}summary{cursor:pointer;color:var(--acc);font-size:13px}"
 "caption{caption-side:top;text-align:left;color:var(--dim);padding:8px 12px;font-size:12px}"
 "</style>";
@@ -198,6 +199,27 @@ static double MB(double bytes) { return bytes/(1024.0*1024.0); }
 //----------------------------------------------------------------------------------
 // Per-backend report
 //----------------------------------------------------------------------------------
+// macOS present-floor callout: emitted at the top of every macOS report involving a Vulkan
+// ICD so raw uncapped FPS is not misread as rendering speed. Evidence measured 2026-08-12
+// on shapes_basic_shapes (Apple M5, MoltenVK performance tracking, uncapped)
+static void WriteMacosFloorCallout(FILE *f)
+{
+    fprintf(f, "<div class=callout><b>Read this before comparing FPS on macOS.</b> "
+        "Uncapped FPS on light scenes here measures <i>presentation</i>, not rendering. Apple GL presents by "
+        "flushing an IOSurface &mdash; no per-frame handshake, essentially free &mdash; while Vulkan on macOS "
+        "(MoltenVK or KosmicKrisp) can only present through Metal, which must acquire a CAMetalDrawable from "
+        "CoreAnimation each frame, paced at ~1.6&ndash;1.8 ms on a composited window no matter how little the "
+        "frame draws. Measured on shapes_basic_shapes, uncapped: frame interval avg 1.95 ms, of which "
+        "<b>1.76 ms (90%%) is &quot;Retrieve a CAMetalDrawable&quot;</b> (MoltenVK's own performance tracking; "
+        "the drawing itself costs ~0.12 ms and the GPU is nearly idle). Every native Metal app pays the same "
+        "pacing; no driver knob removes it (KosmicKrisp's is lowered from ~3.3 to ~1.6 ms by "
+        "<code>MESA_VK_WSI_PRESENT_MODE=mailbox</code>, MoltenVK's config surface is exhausted). "
+        "Cells marked &#176; sit at that backend's floor: their cross-backend ratios compare macOS present "
+        "plumbing. Rows <i>above</i> the floor compare real rendering &mdash; there the Vulkan backend leads "
+        "(e.g. 8000 draw calls: 120 fps GL vs 581 fps rlvk). Under vsync all backends lock to the display "
+        "rate and the floor is invisible.</div>");
+}
+
 static void WriteBackendReport(BackendStats *b)
 {
     char path[MAX_PATH_LEN]; snprintf(path, sizeof(path), "report_%s_%s.html", b->backend, b->label);
@@ -207,6 +229,7 @@ static void WriteBackendReport(BackendStats *b)
     fprintf(f, "<h1>raylib performance &mdash; <span style='color:var(--acc)'>%s</span></h1>", b->backend);
     fprintf(f, "<p class=env><b>GPU</b> %s (%d MB) &nbsp;|&nbsp; <b>Driver</b> %s &nbsp;|&nbsp; <b>OS</b> %s &nbsp;|&nbsp; <b>%d</b> runs &times; <b>%d</b> ms (+%d ms warmup) at full speed</p>",
             b->gpu, b->vramTotalMB, b->gpuDriver, b->osVersion, b->runs, b->durationMs, b->warmupMs);
+    if ((strstr(b->os, "macOS") != NULL) && (strcmp(b->backend, "rlvk") == 0)) WriteMacosFloorCallout(f);
 
     // Main aggregate table
     fprintf(f, "<h2>Summary (representative run per example)</h2><div class=wrap><table>");
@@ -361,6 +384,7 @@ static void WriteComparisonReport(BackendStats *bk, int nb, const char *outPath)
         bk[0].gpu, bk[0].vramTotalMB, bk[0].gpuDriver, bk[0].osVersion, bk[0].runs, bk[0].durationMs);
     fprintf(f, "<p class=sub>Green = best backend for that example/metric, red = worst. Frame time &amp; FPS are the representative run; software (rlsw) has no GPU so its VRAM is ~0. Shader-heavy examples may not execute custom shaders on the software backend.</p>");
     fprintf(f, "<p class=sub><b>&#176; = at that backend's floor</b> (median within 15%% of its own bench_idle median): the scene finishes its real work faster than one present/loop turnaround, so the number measures presentation pacing or loop overhead, not rendering cost, and cross-backend ratios there compare present plumbing. On macOS, Metal-backed Vulkan presents pace on drawable acquire (~1.6-1.8 ms) while GL's IOSurface flush has no floor - only rows without &#176; compare backend rendering cost.</p>");
+    { bool anyMacos = false; for (int k = 0; k < nb; k++) if (strstr(bk[k].os, "macOS") != NULL) anyMacos = true; if (anyMacos) WriteMacosFloorCallout(f); }
 
     ComparisonTable(f, bk, nb, "Frames per second (higher is better)", "Sustained FPS at full speed (uncapped).", M_FPS, "%.0f");
     ComparisonTable(f, bk, nb, "Median frame time, ms (lower is better)", "Median per-frame CPU wall time.", M_MEDIAN, "%.3f");
