@@ -39,13 +39,18 @@
     static const GUID PL_IID_IDXGIFactory1 = { 0x770aae78, 0xf26f, 0x4dba, { 0xa8, 0x29, 0x25, 0x3c, 0x83, 0xd1, 0xb3, 0x87 } };
     static const GUID PL_IID_IDXGIDevice   = { 0x54ec77fa, 0x1377, 0x44e6, { 0x8c, 0x32, 0x88, 0xfd, 0x5f, 0x44, 0xc8, 0x4c } };
     typedef HRESULT (WINAPI *PFN_PL_CreateDXGIFactory1)(REFIID, void **);
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
     #include <dlfcn.h>                  // Required for: dlopen(), dlsym() - runtime Vulkan probe
     #include <vulkan/vulkan.h>          // Types and enums only; every function is dlsym'd
+    #if defined(__APPLE__)
+        #include <sys/sysctl.h>         // sysctlbyname(): macOS product version
+    #endif
 
 // GPU provenance from Vulkan, probed once and cached: adapter name, driver name/version and
 // device-local heap size (the Linux counterparts of the DXGI adapter description fields).
-// The highest-VRAM device wins, matching the Windows adapter choice.
+// The highest-VRAM device wins, matching the Windows adapter choice. On macOS the probe goes
+// through MoltenVK, which is a portability driver: the instance must opt in with
+// VK_KHR_portability_enumeration or the device stays hidden.
 typedef struct PerfLinuxGpuInfo {
     char    name[512];
     char    driver[256];
@@ -59,8 +64,14 @@ static const PerfLinuxGpuInfo *PerfLinuxProbeGpu(void)
     if (info.probed) return &info;
     info.probed = 1;
 
+#if defined(__APPLE__)
+    void *lib = dlopen("libvulkan.1.dylib", RTLD_NOW | RTLD_LOCAL);
+    if (lib == NULL) lib = dlopen("/opt/homebrew/lib/libvulkan.1.dylib", RTLD_NOW | RTLD_LOCAL);
+    if (lib == NULL) lib = dlopen("/usr/local/lib/libvulkan.1.dylib", RTLD_NOW | RTLD_LOCAL);
+#else
     void *lib = dlopen("libvulkan.so.1", RTLD_NOW | RTLD_LOCAL);
     if (lib == NULL) lib = dlopen("libvulkan.so", RTLD_NOW | RTLD_LOCAL);
+#endif
     if (lib == NULL) return &info;
 
     PFN_vkCreateInstance pCreateInstance = (PFN_vkCreateInstance)dlsym(lib, "vkCreateInstance");
@@ -75,6 +86,13 @@ static const PerfLinuxGpuInfo *PerfLinuxProbeGpu(void)
     app.apiVersion = VK_API_VERSION_1_1;                    // Properties2 is 1.1 core
     VkInstanceCreateInfo ici = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
     ici.pApplicationInfo = &app;
+#if defined(__APPLE__)
+    // Portability drivers (MoltenVK) are hidden from enumeration without this opt-in
+    static const char *portabilityExt = "VK_KHR_portability_enumeration";
+    ici.flags = 0x00000001;     // VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
+    ici.enabledExtensionCount = 1;
+    ici.ppEnabledExtensionNames = &portabilityExt;
+#endif
 
     VkInstance instance = VK_NULL_HANDLE;
     if (pCreateInstance(&ici, NULL, &instance) != VK_SUCCESS) return &info;
@@ -152,14 +170,15 @@ static const char *PerfVendorOf(const char *gpu)
     if (strstr(up, "NVIDIA") || strstr(up, "GEFORCE") || strstr(up, "QUADRO") || strstr(up, "RTX") || strstr(up, "GTX")) return "nvidia";
     if (strstr(up, "AMD") || strstr(up, "RADEON") || strstr(up, "ATI"))    return "amd";
     if (strstr(up, "INTEL") || strstr(up, "ARC") || strstr(up, "UHD"))     return "intel";
+    if (strstr(up, "APPLE"))                                               return "apple";
     return "unknown";
 }
 
-// Best-effort GPU name (Windows: highest-VRAM DXGI adapter; Linux: Vulkan probe; other: "unknown")
+// Best-effort GPU name (Windows: highest-VRAM DXGI adapter; Linux/macOS: Vulkan probe)
 static void PerfDetectGpuName(char *out, int outSize)
 {
     snprintf(out, outSize, "unknown");
-#if defined(__linux__)
+#if defined(__linux__) || defined(__APPLE__)
     snprintf(out, outSize, "%s", PerfLinuxProbeGpu()->name);
     return;
 #endif
@@ -228,6 +247,16 @@ static void PerfDetectOSVersion(char *out, int outSize)
     else snprintf(out, outSize, "%s", distro);
     return;
 #endif
+#if defined(__APPLE__)
+    // Product version from sysctl (e.g. "macOS 26.0"); Darwin kernel release as fallback
+    {
+        char ver[64] = "";
+        size_t len = sizeof(ver);
+        if (sysctlbyname("kern.osproductversion", ver, &len, NULL, 0) == 0 && ver[0] != '\0')
+            snprintf(out, outSize, "macOS %s", ver);
+    }
+    return;
+#endif
 #if defined(_WIN32)
     typedef LONG (WINAPI *PFN_PL_RtlGetVersion)(PRTL_OSVERSIONINFOW);
     HMODULE hNt = GetModuleHandleA("ntdll.dll");
@@ -253,9 +282,9 @@ static void PerfDetectOSVersion(char *out, int outSize)
 static void PerfDetectGpuDriver(char *out, int outSize)
 {
     snprintf(out, outSize, "unknown");
-#if defined(__linux__)
-    // Vulkan reports the driver by name and version directly (e.g. "radv Mesa 26.1.6"),
-    // so no vendor-specific decoding is needed
+#if defined(__linux__) || defined(__APPLE__)
+    // Vulkan reports the driver by name and version directly (e.g. "radv Mesa 26.1.6",
+    // "MoltenVK 1.4.2"), so no vendor-specific decoding is needed
     snprintf(out, outSize, "%s", PerfLinuxProbeGpu()->driver);
     return;
 #endif

@@ -15,6 +15,16 @@ EXT     =
 
 ifeq ($(OS),Windows_NT)
     EXT = .exe
+else
+    # macOS: Vulkan headers for the GPU probe come from Homebrew (types only, no linking)
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Darwin)
+        ifneq ($(wildcard /opt/homebrew/include/vulkan/vulkan.h),)
+            CFLAGS += -I/opt/homebrew/include
+        else ifneq ($(wildcard /usr/local/include/vulkan/vulkan.h),)
+            CFLAGS += -I/usr/local/include
+        endif
+    endif
 endif
 
 all: performance_capture$(EXT) performance_report$(EXT)

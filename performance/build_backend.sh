@@ -25,6 +25,7 @@ EXDIR="$RAYLIB/examples"
 
 case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*) HOST_OS=windows; EXT=".exe"; MAKE=${MAKE:-mingw32-make} ;;
+  Darwin)               HOST_OS=macos;   EXT="";     MAKE=${MAKE:-make} ;;
   *)                    HOST_OS=linux;   EXT="";     MAKE=${MAKE:-make} ;;
 esac
 
@@ -63,6 +64,10 @@ case "$BACKEND" in
           if [ -z "${VULKAN_SDK:-}" ]; then echo "ERROR: VULKAN_SDK not set"; exit 1; fi
           VKLIB=$(cygpath -m "$VULKAN_SDK" 2>/dev/null || echo "${VULKAN_SDK//\\//}")   # Windows path, forward slashes
           EX_LDLIBS="-L$VKLIB/Lib -lraylib -lgdi32 -lwinmm -luser32 -lkernel32 -lvulkan-1"
+        elif [ "$HOST_OS" = macos ]; then
+          # Homebrew Vulkan loader (MoltenVK ICD) + the Cocoa frameworks the Makefile's GL
+          # default would otherwise provide
+          EX_LDLIBS="-lraylib -L/opt/homebrew/lib -lvulkan -framework Foundation -framework AppKit -framework Cocoa -framework IOKit -framework CoreAudio -framework CoreVideo -framework Metal -framework QuartzCore"
         else
           # The Vulkan loader replaces -lGL. -lX11 must be explicit: rcore.c's clipboard path
           # calls Xlib directly, and without -lGL nothing else pulls libX11 in transitively
@@ -115,6 +120,12 @@ build_examples(){ # $1 = extra link flags   $2 = quiet
   rm -f "/tmp/rlbuild_$$.log"
 }
 
+# macOS: Apple clang has no gcda-flow PGO (-ffat-lto-objects/-fprofile-correction are GCC-only),
+# so the campaign config there is plain -O2 for every backend - ratios stay fair
+if [ "$HOST_OS" = macos ] && [ -z "${RAYLIB_PERF_NO_PGO:-}" ]; then
+  echo "NOTE: macOS builds at plain -O2 (no GCC-style PGO with Apple clang)"
+  RAYLIB_PERF_NO_PGO=1
+fi
 if [ -n "${RAYLIB_PERF_NO_PGO:-}" ]; then
   build_lib ""
   build_examples ""

@@ -326,9 +326,13 @@ static void WriteEnvironment(const char *outDir, const char *backend, const char
             }
         }
     }
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
     char machine[256] = "unknown"; gethostname(machine, sizeof(machine) - 1);
+#if defined(__APPLE__)
+    const char *os = "macOS";
+#else
     const char *os = "Linux";
+#endif
 
     const PerfLinuxGpuInfo *probe = PerfLinuxProbeGpu();
     snprintf(gpu, sizeof(gpu), "%s", probe->name);
