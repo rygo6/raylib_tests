@@ -120,7 +120,12 @@ one Vulkan-on-Metal ICD (MoltenVK, Mesa's KosmicKrisp), macOS rlvk artifacts nam
 (`rlvk_macos_moltenvk/`, `rlvk_macos_kosmickrisp/`, matching configs/diffs/reports); select the
 driver at capture time with `VK_DRIVER_FILES=<icd.json>`. Current state (2026-08-11, Apple
 M5 / MoltenVK 1.4.2): **457 bit-exact + 158 tolerated + 0 fail** of 637 frames, 22 skipped by
-design. Keep the display awake (`caffeinate -dimsu`) for unattended captures.
+design. KosmicKrisp (Mesa 26.2.0, same baseline and allowances): **459 bit-exact + 150
+tolerated + 0 fail** — slightly more bit-exact than MoltenVK; two documented exclusions
+(`models_point_rendering`: no `fillModeNonSolid`, rlvk's fallback renders it filled;
+`core_directory_files`: stale-baseline drift, proven by a fresh MoltenVK≡KosmicKrisp
+bit-identical control — drop after the next GL baseline recapture). Keep the display awake
+(`caffeinate -dimsu`) for unattended captures.
 
 ## Notes
 

@@ -84,7 +84,7 @@ device would be invisible). Because macOS can host more than one Vulkan-on-Metal
 Mesa's KosmicKrisp), **rlvk captures pin the ICD in the label**: `performance_rlvk_moltenvk.ini`
 and `performance_rlvk_kosmickrisp.ini` set `label macos_moltenvk` / `macos_kosmickrisp`, and the
 ICD is selected at run time with `VK_DRIVER_FILES=<icd.json>` (MoltenVK:
-`/opt/homebrew/opt/molten-vk/share/vulkan/icd.d/MoltenVK_icd.json`; KosmicKrisp:
+`/opt/homebrew/etc/vulkan/icd.d/MoltenVK_icd.json`; KosmicKrisp:
 `/opt/homebrew/opt/mesa/share/vulkan/icd.d/kosmickrisp_mesa_icd.aarch64.json`). rlgl does not go
 through a Vulkan ICD, so its captures keep the machine label `macos_apple`. Builds run at plain `-O2` — Apple clang has no gcda-flow PGO, so
 `build_backend.sh` forces the no-PGO path and both backends stay at identical flags. Keep the
@@ -120,25 +120,47 @@ it — that change alone took bench_instanced from 3.40 to 1.85 ms. What remains
 itself: **any scene whose real work is under ~1.8 ms measures present pacing, not backend
 cost** — the macOS analogue of the Linux µs-class CHECK-us policy, with a 10× higher bar.
 
-### Results (2026-08-11, Apple M5, MoltenVK 1.4.2, sustained-FPS medians)
+### KosmicKrisp: the same floor is driver-specific — and Mesa has the knob
 
-Above the floor, rlvk wins like it does on the other platforms:
+Mesa's KosmicKrisp (conformant Vulkan 1.4 on Metal 4, Homebrew `mesa` on macOS 26+) advertises
+IMMEDIATE but its IMMEDIATE still paces on drawable acquire — **~3.3 ms** at bench_idle, worse
+than MoltenVK's 1.8. The fix is Mesa's official WSI override:
 
-| scene | rlgl | rlvk | verdict |
-|---|---|---|---|
-| bench_drawcalls (8000 draws) | 120 fps | **509 fps** | **rlvk 4.6× faster** |
-| performance_stress_test | 82 fps | **177 fps** | **rlvk 2.3× faster** |
-| models_waving_cubes | 351 fps | **592 fps** | **rlvk 1.7× faster** |
-| shaders_raymarching_rendering | 317 fps | 293 fps | ~parity (fragment-ALU class) |
-| performance_stress_test_direct | 4.5 fps | 2.8 fps | rlgl 1.6× faster (see below) |
-| the other 14 scenes | (sub-floor) | ~470–620 fps | PRESENT-FLOOR — not a backend comparison |
+```sh
+MESA_VK_WSI_PRESENT_MODE=mailbox    # REQUIRED for full-speed capture on KosmicKrisp
+```
 
-The one real loss, `performance_stress_test_direct` (356 vs 223 ms — a single fullscreen
-raymarching fragment shader), is the fragment-ALU-saturated class that ties on NVIDIA/AMD:
-the GLSL→SPIR-V→(SPIRV-Cross)→MSL double translation loses to Apple's direct GL compiler on
-branchy raymarch loops. shaderc's optimizer is already on and MoltenVK's fast-math is already
-the default; not app-addressable. RAM is comparable across backends (rlvk a few MB higher on
-texture-heavy scenes).
+Mesa's mailbox path presents through its own thread, and the floor collapses to **~1.60 ms —
+below MoltenVK's** (bench_idle 3.13 → 1.60 ms, bench_drawcalls 3.41 → 1.62 ms). MoltenVK
+advertises no MAILBOX and has no equivalent override, so its ~1.8 ms floor stands. The mode is
+not advertised by the driver but is the same uncapped-presentation semantics class the capture
+hook already targets (its own fallback order is IMMEDIATE, else MAILBOX).
+
+### Results (2026-08-11/12, Apple M5, MoltenVK 1.4.2 vs KosmicKrisp Mesa 26.2.0, one machine-state window)
+
+Sustained-FPS medians; KosmicKrisp captured with the mailbox knob. Scenes at ~1.60 ms on
+KosmicKrisp / ~1.8 ms on MoltenVK sit on the respective present floor.
+
+| scene | rlgl | rlvk (MoltenVK) | rlvk (KosmicKrisp) | verdict |
+|---|---|---|---|---|
+| bench_drawcalls (8000 draws) | 120 fps | 474 fps | **581 fps** | rlvk 4–4.8× over GL; both ICDs floor-bound |
+| performance_stress_test | 84 fps | **195 fps** | 149 fps | rlvk wins; **MoltenVK 1.3× over KK** (the one KK loss) |
+| models_waving_cubes | 378 fps | 544 fps | **595 fps** | rlvk 1.4–1.6× over GL |
+| shaders_raymarching_rendering | 319 fps | 156 fps | **260 fps** | KK 1.7× over MoltenVK (fragment-ALU class) |
+| performance_stress_test_direct | 211.8 ms | 325.5 ms | **239.4 ms** | KK 1.36× over MoltenVK, near-closes the GL gap |
+| bench_instanced | 2344 fps | 362 fps | **497 fps** | KK 1.41× over MoltenVK |
+| models_loading / skybox / maze / camera_free | (sub-floor GL) | 289–353 fps | **524–564 fps** | KK ~1.8–2.1× — MoltenVK pays extra present cost here, KK mailbox flattens all to the 1.60 floor |
+| remaining light scenes | (sub-floor) | ~460–544 fps | ~460–590 fps | both at their floors — present pacing, not backend cost |
+
+Net: with the mailbox knob, **KosmicKrisp ≥ MoltenVK on 17 of 19 scenes**. The fragment-ALU
+class (`stress_test_direct`, raymarching) is where the ICDs genuinely differ in code
+generation: Mesa's NIR→MSL compiler beats the glslang→SPIRV-Cross→MSL double translation
+(325.5 → 239.4 ms; Apple's direct GL compiler still holds 211.8). The one KK loss is
+`performance_stress_test` (mixed heavy batch volume, 6.71 vs 5.10 ms). Costs: KosmicKrisp
+carries ~8–9 MB more fixed process RAM (210 vs 160 MB peak on stress_test). KosmicKrisp lacks
+`fillModeNonSolid` (wire/point polygon modes render filled — documented rlvk fallback); its
+image-equivalence gate is otherwise GREEN and slightly *more* bit-exact than MoltenVK
+(459 vs 457 of 637 frames).
 
 ## Build the tools
 

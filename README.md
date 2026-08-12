@@ -33,6 +33,13 @@ backends are capture-deterministic on this machine (GL-vs-GL and rlvk-vs-rlvk co
 bit-exact at tolerance 0); every tolerated diff is a stable Apple-GL-vs-Metal rasterization
 or shader-ULP tie-break, catalogued per scene in `image_comparison_rlvk_macos_moltenvk.ini`.
 
+The same gate on **Mesa's KosmicKrisp** ICD (2026-08-11, Mesa 26.2.0,
+`image_comparison_rlvk_macos_kosmickrisp.ini`, same baseline and allowances): **459 bit-exact
++ 150 tolerated + 0 fail** — slightly *more* bit-exact than MoltenVK. Two documented
+exclusions: `models_point_rendering` (KosmicKrisp lacks `fillModeNonSolid`; rlvk's documented
+fallback renders point mode filled) and `core_directory_files` (stale-baseline drift, proven
+by a fresh MoltenVK≡KosmicKrisp bit-identical control).
+
 Two run modes: the **full suite** (all built examples — the merge gate) and a **regression
 subset** (`bash image_equivalence/run_regression_rlvk.sh`, ~37 scenes covering every backend
 code path, ~2 min) for the inner development loop — see the suite README.
@@ -68,21 +75,25 @@ uses ~33% less RAM (116 vs 172 MB typical) and less VRAM on nearly every scene, 
 Vulkan runtime is lighter than its GL one, whereas NVIDIA's is heavier. Same-window capture,
 XWayland present path.
 
-Current state, **macOS / Apple M5 / MoltenVK 1.4.2** (2026-08-11, both backends at plain -O2 —
-Apple clang has no gcda-flow PGO — with the acquire-late present chain): the story is gated by
-a **~1.8 ms Metal present floor** — on a composited window, MoltenVK's image acquire is a
-blocking Metal drawable request that no knob removes (3 images measured worse; fast-math and
-present-mode configs are no-ops), while macOS GL presents through an IOSurface flush with no
-floor at all. 14 of 19 scenes complete their real work under that floor on one or both
-backends, so their ratios measure present semantics, not backend cost — the macOS analogue of
-the Linux µs-class CHECK-us policy, with a 10× higher bar. Where real work exceeds the floor,
-rlvk leads: **4.6×** on 8000 draw calls, **2.3×** on the mixed stress scene, **1.7×** on waving
-cubes. The fragment-ALU-saturated class loses ~1.6× (raymarching stress: 356 vs 223 ms):
-the GLSL→SPIR-V→MSL double translation loses to Apple's direct GL compiler on branchy
-raymarch loops — the same class that ties on NVIDIA/AMD, amplified by the extra translation
-hop; shaderc's optimizer is already on and MoltenVK's fast-math is already default. RAM is
-comparable (rlvk a few MB higher on texture-heavy scenes); per-process VRAM reports 0 on both
-backends by design (Apple Silicon unified memory has no per-process VRAM metric).
+Current state, **macOS / Apple M5** (2026-08-11/12, MoltenVK 1.4.2 vs KosmicKrisp Mesa 26.2.0,
+both backends at plain -O2 — Apple clang has no gcda-flow PGO — acquire-late present chain,
+one machine-state window): the story is gated by **present floors** — on a composited window,
+MoltenVK's image acquire is a blocking Metal drawable request that no MoltenVK knob removes
+(~1.8 ms; 3 images measured worse; fast-math and present-mode configs are no-ops), while macOS
+GL presents through an IOSurface flush with no floor at all. KosmicKrisp's IMMEDIATE paces even
+worse (~3.3 ms), but Mesa ships the knob MoltenVK lacks: `MESA_VK_WSI_PRESENT_MODE=mailbox`
+presents through Mesa's own thread and drops the floor to **~1.60 ms, below MoltenVK's**. With
+that knob, **KosmicKrisp ≥ MoltenVK on 17 of 19 scenes**: the fragment-ALU class turns from
+rlvk's one real macOS loss into near-parity with GL (raymarching stress 239 vs MoltenVK's 326
+vs GL's 212 ms — Mesa's NIR→MSL beats the glslang→SPIRV-Cross→MSL double translation), and the
+scenes where MoltenVK paid extra present cost (models_loading, skybox, maze, camera_free)
+flatten to the floor for ~1.8–2.1× gains. MoltenVK still wins the mixed-batch stress scene
+(5.10 vs 6.71 ms). Sub-floor scenes measure present semantics, not backend cost — the macOS
+analogue of the Linux µs-class CHECK-us policy. Where real work exceeds the floor, rlvk leads
+GL on either ICD: **4–4.8×** on 8000 draw calls, **1.8–2.3×** on the mixed stress scene,
+**1.4–1.6×** on waving cubes. RAM is comparable (KosmicKrisp ~8–9 MB above MoltenVK);
+per-process VRAM reports 0 on both backends by design (Apple Silicon unified memory has no
+per-process VRAM metric).
 
 Two run modes here as well: the **full suite** (`run_all.sh`, all scenes × all backends in one
 machine-state window — the committed record) and a **regression subset**
