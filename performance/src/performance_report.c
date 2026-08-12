@@ -276,9 +276,21 @@ static bool DuplicateBackendNames(BackendStats *bk, int nb)
     return false;
 }
 
+// Per-backend floor: the bench_idle representative median (0 when bench_idle is absent).
+// A scene whose median sits at this floor measures present pacing / loop overhead, not
+// rendering cost (macOS: Metal drawable acquire paces Vulkan presents while GL's IOSurface
+// flush has no floor, so raw sub-floor ratios compare present plumbing, not backends)
+static double BackendFloorMs(BackendStats *b)
+{
+    for (int j = 0; j < b->exCount; j++)
+        if (strcmp(b->ex[j].name, "bench_idle") == 0 && b->ex[j].agg.valid) return b->ex[j].agg.fmed;
+    return 0.0;
+}
+
 static void ComparisonTable(FILE *f, BackendStats *bk, int nb, const char *title, const char *caption, Metric m, const char *fmt)
 {
     bool dup = DuplicateBackendNames(bk, nb);
+    bool frameMetric = (m == M_FPS) || (m == M_MEDIAN) || (m == M_AVG);
     fprintf(f, "<h2>%s</h2><div class=wrap><table><caption>%s</caption>", title, caption);
     fprintf(f, "<tr><th class=name>Example</th>");
     for (int k = 0; k < nb; k++)
@@ -295,16 +307,16 @@ static void ComparisonTable(FILE *f, BackendStats *bk, int nb, const char *title
         fprintf(f, "<tr><td class=name>%s</td>", name);
 
         // Gather values across backends for best/worst highlight
-        double vals[MAX_BACKENDS]; bool has[MAX_BACKENDS];
+        double vals[MAX_BACKENDS], meds[MAX_BACKENDS]; bool has[MAX_BACKENDS];
         double best = 0; int bestSet = 0;
         double worst = 0; int worstSet = 0;
         for (int k = 0; k < nb; k++)
         {
-            has[k] = false; vals[k] = 0;
+            has[k] = false; vals[k] = 0; meds[k] = 0;
             for (int j = 0; j < bk[k].exCount; j++)
             {
                 if (strcmp(bk[k].ex[j].name, name) == 0 && bk[k].ex[j].agg.valid)
-                { vals[k] = MetricVal(&bk[k].ex[j].agg, m); has[k] = true; break; }
+                { vals[k] = MetricVal(&bk[k].ex[j].agg, m); meds[k] = bk[k].ex[j].agg.fmed; has[k] = true; break; }
             }
             if (has[k])
             {
@@ -316,8 +328,11 @@ static void ComparisonTable(FILE *f, BackendStats *bk, int nb, const char *title
         {
             if (!has[k]) { fprintf(f, "<td class=na>&mdash;</td>"); continue; }
             const char *cls = (nb > 1 && vals[k] == best) ? "best" : (nb > 1 && vals[k] == worst) ? "worst" : "";
+            double floorMs = BackendFloorMs(&bk[k]);
+            bool atFloor = frameMetric && (floorMs > 0) && (meds[k] <= floorMs*1.15);
             fprintf(f, "<td class='%s'>", cls);
             fprintf(f, fmt, vals[k]);
+            if (atFloor) fprintf(f, "&#176;");
             fprintf(f, "</td>");
         }
         fprintf(f, "</tr>");
@@ -345,6 +360,7 @@ static void WriteComparisonReport(BackendStats *bk, int nb, const char *outPath)
     fprintf(f, " &nbsp;|&nbsp; <b>GPU</b> %s (%d MB) &nbsp;|&nbsp; <b>Driver</b> %s &nbsp;|&nbsp; <b>OS</b> %s &nbsp;|&nbsp; %d runs &times; %d ms full speed</p>",
         bk[0].gpu, bk[0].vramTotalMB, bk[0].gpuDriver, bk[0].osVersion, bk[0].runs, bk[0].durationMs);
     fprintf(f, "<p class=sub>Green = best backend for that example/metric, red = worst. Frame time &amp; FPS are the representative run; software (rlsw) has no GPU so its VRAM is ~0. Shader-heavy examples may not execute custom shaders on the software backend.</p>");
+    fprintf(f, "<p class=sub><b>&#176; = at that backend's floor</b> (median within 15%% of its own bench_idle median): the scene finishes its real work faster than one present/loop turnaround, so the number measures presentation pacing or loop overhead, not rendering cost, and cross-backend ratios there compare present plumbing. On macOS, Metal-backed Vulkan presents pace on drawable acquire (~1.6-1.8 ms) while GL's IOSurface flush has no floor - only rows without &#176; compare backend rendering cost.</p>");
 
     ComparisonTable(f, bk, nb, "Frames per second (higher is better)", "Sustained FPS at full speed (uncapped).", M_FPS, "%.0f");
     ComparisonTable(f, bk, nb, "Median frame time, ms (lower is better)", "Median per-frame CPU wall time.", M_MEDIAN, "%.3f");
