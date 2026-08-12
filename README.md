@@ -24,6 +24,15 @@ Current state: the Vulkan backend passes the full suite against the GL baseline
 rendering is bit-exact, MSAA scenes carry measured AA-edge allowances since rlvk uses
 standard Vulkan MSAA rather than replicating GL's sample pattern and resolve).
 
+macOS gate (2026-08-11, Apple M5 / MoltenVK 1.4.2, vs a same-machine Apple GL 4.1 baseline in
+`rlgl_baseline_macos/` — cross-driver variance exceeds cross-backend variance, so committed
+baselines from other machines are never compared against): **457 bit-exact + 158 within
+measured allowances + 0 fail** of 637 frames; 22 skipped by design (wall-clock/live-audio
+scenes plus compute, which has no GL reference on macOS — Apple GL tops out at 4.1). Both
+backends are capture-deterministic on this machine (GL-vs-GL and rlvk-vs-rlvk controls
+bit-exact at tolerance 0); every tolerated diff is a stable Apple-GL-vs-Metal rasterization
+or shader-ULP tie-break, catalogued per scene in `image_comparison_rlvk_macos.ini`.
+
 Two run modes: the **full suite** (all built examples — the merge gate) and a **regression
 subset** (`bash image_equivalence/run_regression_rlvk.sh`, ~37 scenes covering every backend
 code path, ~2 min) for the inner development loop — see the suite README.
@@ -37,8 +46,8 @@ per-process VRAM. A curated set of 19 scenes (real examples plus purpose-built b
 idle overhead, 8000 draw calls, instancing, fragment-bound stress) runs 3×10 s per backend,
 all backends captured back-to-back in one session so machine-state drift cannot bias the
 comparison. Output: one HTML report per backend plus a cross-backend comparison, stamped with
-OS, GPU, and driver provenance (`report_*_windows_nvidia.html` and `report_*_linux_amd.html`
-are committed).
+OS, GPU, and driver provenance (`report_*_windows_nvidia.html`, `report_*_linux_amd.html` and
+`report_*_macos_apple.html` are committed).
 
 Current state, **Windows / RTX 4090 / NVIDIA 595.97**: rlvk leads rlgl on 17 of 19 scenes
 (1.5×–7.5×); the two fragment-ALU-saturated scenes measure at parity (a ~2% NVIDIA
@@ -56,6 +65,22 @@ direction — are window state, not code; only the same-window ratios are meanin
 uses ~33% less RAM (116 vs 172 MB typical) and less VRAM on nearly every scene, because Mesa's
 Vulkan runtime is lighter than its GL one, whereas NVIDIA's is heavier. Same-window capture,
 XWayland present path.
+
+Current state, **macOS / Apple M5 / MoltenVK 1.4.2** (2026-08-11, both backends at plain -O2 —
+Apple clang has no gcda-flow PGO — with the acquire-late present chain): the story is gated by
+a **~1.8 ms Metal present floor** — on a composited window, MoltenVK's image acquire is a
+blocking Metal drawable request that no knob removes (3 images measured worse; fast-math and
+present-mode configs are no-ops), while macOS GL presents through an IOSurface flush with no
+floor at all. 14 of 19 scenes complete their real work under that floor on one or both
+backends, so their ratios measure present semantics, not backend cost — the macOS analogue of
+the Linux µs-class CHECK-us policy, with a 10× higher bar. Where real work exceeds the floor,
+rlvk leads: **4.6×** on 8000 draw calls, **2.3×** on the mixed stress scene, **1.7×** on waving
+cubes. The fragment-ALU-saturated class loses ~1.6× (raymarching stress: 356 vs 223 ms):
+the GLSL→SPIR-V→MSL double translation loses to Apple's direct GL compiler on branchy
+raymarch loops — the same class that ties on NVIDIA/AMD, amplified by the extra translation
+hop; shaderc's optimizer is already on and MoltenVK's fast-math is already default. RAM is
+comparable (rlvk a few MB higher on texture-heavy scenes); per-process VRAM reports 0 on both
+backends by design (Apple Silicon unified memory has no per-process VRAM metric).
 
 Two run modes here as well: the **full suite** (`run_all.sh`, all scenes × all backends in one
 machine-state window — the committed record) and a **regression subset**
