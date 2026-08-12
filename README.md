@@ -100,6 +100,18 @@ GL on either ICD: **4–4.8×** on 8000 draw calls, **1.8–2.3×** on the mixed
 per-process VRAM reports 0 on both backends by design (Apple Silicon unified memory has no
 per-process VRAM metric).
 
+The shader-language campaign (2026-08-12, round 2) closed the last loss:
+`report_comparison_macos_rlmtl_languages.html` carries four columns — rlgl | rlmtl (GLSL) |
+rlmtl_slang | rlmtl_msl. The GLSL column wins 17/19 outright plus raymarching at parity-win
+(verified by cool isolated A/B; multi-leg campaigns thermally skew fragment-heavy scenes);
+the mandelbulb falls to the language ladder: **Slang 83 ms and handwritten MSL 74 ms vs
+rlgl's 245 ms** (the Slang variant is pixel-identical to the GLSL path — probed at two
+camera positions; sources in `performance/shader_overrides/`, injected per shader via
+`RLMTL_MSL_OVERRIDE`, keyed by SPIR-V hash). Net: **rlmtl ≥ rlgl on all 19 scenes.** The
+GLSL translation loss mechanism is SPIRV-Cross's flattened-SSA MSL defeating Metal's
+optimizer (a clean translation of identical rolled loops runs 1.5x faster); slangc's GLSL
+mode cannot compile stock GLSL matrix ops to Metal, hence the Slang-language port.
+
 Current state, **macOS / Apple M5 / rlmtl (native Metal)** (2026-08-12, same-window
 three-leg campaign): **rlmtl beats rlgl on 18 of 19 scenes** — 6–26x on light scenes
 (mailbox present thread + frame ring depth 3 remove every presentation and ring stall;
