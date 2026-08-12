@@ -75,14 +75,64 @@ Linux, Apple clang on macOS. For rlvk: the Vulkan loader plus headers (Windows: 
 `vulkan-loader` + `vulkan-headers`), and `shaderc` at run time for custom-shader scenes. Backends
 share one `libraylib.a`, so each is built and captured fully before the next.
 
-macOS caveats: builds run at plain `-O2` (Apple clang has no gcda-flow PGO; `build_backend.sh`
-forces the no-PGO path so both backends stay at identical flags), the label auto-resolves to
-`macos_apple` through a MoltenVK probe, and a **~1.8 ms Metal present floor** (blocking drawable
-acquire; no MoltenVK config moves it — 3 swapchain images, fast-math, present-with-command-buffer,
-synchronous-submits and max-active-command-buffers were all A/B'd) bounds every scene lighter than
-that. Sub-floor scenes measure present pacing, not backend cost; treat them like the Linux
-µs-class CHECK-us verdicts. Keep the display awake (`caffeinate -dimsu`) for unattended runs:
-display sleep fails GLFW window creation.
+## macOS
+
+Runs with the stock scripts: `bash run_all.sh rlgl rlvk` (rlsw untested there). Prerequisites are
+Homebrew `molten-vk`, `vulkan-loader`, `vulkan-headers` and `shaderc`; the label auto-resolves to
+`macos_apple` through a MoltenVK probe (the probe enables `VK_KHR_portability_enumeration`, or the
+device would be invisible). Builds run at plain `-O2` — Apple clang has no gcda-flow PGO, so
+`build_backend.sh` forces the no-PGO path and both backends stay at identical flags. Keep the
+display awake (`caffeinate -dimsu`) for unattended runs: display sleep fails GLFW window creation.
+
+### The ~1.8 ms Metal present floor — read this before interpreting macOS numbers
+
+On a composited macOS window, presenting through Metal is paced by CoreAnimation handing out
+drawables: the wait surfaces in MoltenVK as **"Retrieve a CAMetalDrawable"** and measures ~1.8 ms
+per frame at uncapped rates, no matter how little the frame draws. This is *not* MoltenVK being
+conservative — its own instrumentation shows it already defers the drawable request maximally
+(it happens inside the submit's encode, exactly when the present blit needs the drawable's
+texture), and every native Metal app pays the same pacing. macOS **GL never pays it**: it
+presents by flushing an IOSurface with no drawable handshake, which is why rlgl can report
+7000+ FPS on scenes that draw almost nothing.
+
+Diagnosis is reproducible with MoltenVK's built-in tracking:
+
+```sh
+MVK_CONFIG_PERFORMANCE_TRACKING=1 MVK_CONFIG_PERFORMANCE_LOGGING_FRAME_COUNT=256 MVK_CONFIG_LOG_LEVEL=3 ./bench_idle    # look for "Retrieve a CAMetalDrawable"
+```
+
+Config surface exhausted (all A/B'd on bench_idle, none moved the floor): 3 swapchain images
+(measured WORSE — 2.08 vs 1.81 ms), `MVK_CONFIG_FAST_MATH_ENABLED`,
+`MVK_CONFIG_PRESENT_WITH_COMMAND_BUFFER`, `MVK_CONFIG_SYNCHRONOUS_QUEUE_SUBMITS` (both values),
+`MVK_CONFIG_MAX_ACTIVE_METAL_COMMAND_BUFFERS_PER_QUEUE`. Only not presenting at all
+(offscreen/present-skip) escapes it.
+
+rlvk's mitigation: the backend acquires its swapchain image in the **present chain**, not at
+frame begin (the frame renders into an intermediate; only the final flip blit needs the
+swapchain image), so the drawable wait overlaps the frame's CPU recording instead of adding to
+it — that change alone took bench_instanced from 3.40 to 1.85 ms. What remains is the floor
+itself: **any scene whose real work is under ~1.8 ms measures present pacing, not backend
+cost** — the macOS analogue of the Linux µs-class CHECK-us policy, with a 10× higher bar.
+
+### Results (2026-08-11, Apple M5, MoltenVK 1.4.2, sustained-FPS medians)
+
+Above the floor, rlvk wins like it does on the other platforms:
+
+| scene | rlgl | rlvk | verdict |
+|---|---|---|---|
+| bench_drawcalls (8000 draws) | 120 fps | **509 fps** | **rlvk 4.6× faster** |
+| performance_stress_test | 82 fps | **177 fps** | **rlvk 2.3× faster** |
+| models_waving_cubes | 351 fps | **592 fps** | **rlvk 1.7× faster** |
+| shaders_raymarching_rendering | 317 fps | 293 fps | ~parity (fragment-ALU class) |
+| performance_stress_test_direct | 4.5 fps | 2.8 fps | rlgl 1.6× faster (see below) |
+| the other 14 scenes | (sub-floor) | ~470–620 fps | PRESENT-FLOOR — not a backend comparison |
+
+The one real loss, `performance_stress_test_direct` (356 vs 223 ms — a single fullscreen
+raymarching fragment shader), is the fragment-ALU-saturated class that ties on NVIDIA/AMD:
+the GLSL→SPIR-V→(SPIRV-Cross)→MSL double translation loses to Apple's direct GL compiler on
+branchy raymarch loops. shaderc's optimizer is already on and MoltenVK's fast-math is already
+the default; not app-addressable. RAM is comparable across backends (rlvk a few MB higher on
+texture-heavy scenes).
 
 ## Build the tools
 

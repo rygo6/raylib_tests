@@ -86,6 +86,28 @@ mirror the change there.
 
 ## macOS
 
+Run it with the same tools, macOS configs and a locally generated baseline (both backends built
+with Apple clang; rlvk links Homebrew's Vulkan loader):
+
+```sh
+# baseline: build raylib GL + all examples, capture the same-machine reference
+cd ../../raylib/src && make clean && make CC='cc -pipe -DDETERMINISTIC_IMAGE_COMPARISON_CAPTURE'
+cd ../examples && make CC='cc -pipe'
+cd ../../raylib_tests/image_equivalence
+../src/image_comparison_capture rlgl_baseline_macos image_comparison_rlvk_macos.ini
+
+# candidate: rebuild raylib as rlvk, relink the examples, capture, diff
+cd ../../raylib/src && make clean && \
+  make GRAPHICS=GRAPHICS_API_VULKAN_14 CC='cc -pipe -DDETERMINISTIC_IMAGE_COMPARISON_CAPTURE'
+cd ../examples && make GRAPHICS=GRAPHICS_API_VULKAN_14 CC='cc -pipe' \
+  LDLIBS='-lraylib -L/opt/homebrew/lib -lvulkan -framework Foundation -framework AppKit \
+          -framework Cocoa -framework IOKit -framework CoreAudio -framework CoreVideo \
+          -framework Metal -framework QuartzCore'
+cd ../../raylib_tests/image_equivalence
+../src/image_comparison_capture rlvk_macos image_comparison_rlvk_macos.ini
+../src/image_comparison_diff image_comparison_rlvk_macos.ini
+```
+
 macOS compares against a **same-machine Apple GL baseline** (`rlgl_baseline_macos/`, generated
 locally, not committed) rather than the committed Windows baseline: cross-driver pixel variance
 exceeds cross-backend variance, so only a same-machine GL capture is a valid reference. Configs:
