@@ -73,7 +73,11 @@ case "$BACKEND" in
           # calls Xlib directly, and without -lGL nothing else pulls libX11 in transitively
           EX_LDLIBS="-lraylib -lvulkan -lX11 -lm -lpthread -ldl -lrt"
         fi ;;
-  *) echo "usage: $0 <rlgl|rlsw|rlvk>"; exit 2 ;;
+  rlmtl) GRAPHICS=GRAPHICS_API_METAL
+        if [ "$HOST_OS" != macos ]; then echo "ERROR: rlmtl is macOS-only"; exit 1; fi
+        # Native Metal backend: spirv-cross static libs (SPIR-V -> MSL) + Cocoa frameworks
+        EX_LDLIBS="-lraylib -L/opt/homebrew/lib -lspirv-cross-c -lspirv-cross-msl -lspirv-cross-hlsl -lspirv-cross-glsl -lspirv-cross-cpp -lspirv-cross-reflect -lspirv-cross-util -lspirv-cross-core -lc++ -framework Foundation -framework AppKit -framework Cocoa -framework IOKit -framework CoreAudio -framework CoreVideo -framework Metal -framework QuartzCore" ;;
+  *) echo "usage: $0 <rlgl|rlsw|rlvk|rlmtl>"; exit 2 ;;
 esac
 
 echo "==================================================================="

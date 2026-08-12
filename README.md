@@ -33,6 +33,11 @@ backends are capture-deterministic on this machine (GL-vs-GL and rlvk-vs-rlvk co
 bit-exact at tolerance 0); every tolerated diff is a stable Apple-GL-vs-Metal rasterization
 or shader-ULP tie-break, catalogued per scene in `image_comparison_rlvk_macos_moltenvk.ini`.
 
+The same gate on **rlmtl**, the native Metal backend (2026-08-12, clean-room fresh capture,
+`image_comparison_rlmtl_macos.ini`): **461 bit-exact + 151 tolerated + 0 fail** — the most
+bit-exact hardware backend of the three (rlmtl 461 > KosmicKrisp 459 > MoltenVK 457). One
+rlmtl-specific allowance (a 1px DrawLineEx band tie-break scene) documented in the config.
+
 The same gate on **Mesa's KosmicKrisp** ICD (2026-08-11, Mesa 26.2.0,
 `image_comparison_rlvk_macos_kosmickrisp.ini`, same baseline and allowances): **459 bit-exact
 + 150 tolerated + 0 fail** — slightly *more* bit-exact than MoltenVK. Two documented
@@ -94,6 +99,15 @@ GL on either ICD: **4–4.8×** on 8000 draw calls, **1.8–2.3×** on the mixed
 **1.4–1.6×** on waving cubes. RAM is comparable (KosmicKrisp ~8–9 MB above MoltenVK);
 per-process VRAM reports 0 on both backends by design (Apple Silicon unified memory has no
 per-process VRAM metric).
+
+Current state, **macOS / Apple M5 / rlmtl (native Metal)** (2026-08-12, same-window
+three-leg campaign): **rlmtl beats rlgl on 18 of 19 scenes** — 6–26x on light scenes
+(mailbox present thread + frame ring depth 3 remove every presentation and ring stall;
+bench_idle 0.013 vs 0.136 ms), 19.8x on 8000 draw calls, 33.5x on instancing, 5.8x waving
+cubes, 2.3x mixed stress. The one loss is the fragment-ALU mandelbulb (0.65x): SPIRV-Cross
+keeps its multi-exit raymarch loop rolled where Mesa's NIR unrolls it (verified against
+KosmicKrisp's MSL dump); measured not app-addressable through shaderc+SPIRV-Cross. RAM:
+rlmtl wins the light half (86–88 vs 92 MB), carries a few MB extra on shader-heavy scenes.
 
 Two run modes here as well: the **full suite** (`run_all.sh`, all scenes × all backends in one
 machine-state window — the committed record) and a **regression subset**
