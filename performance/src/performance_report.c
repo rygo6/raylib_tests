@@ -325,9 +325,11 @@ static void ComparisonTable(FILE *f, BackendStats *bk, int nb, const char *title
     fprintf(f, "</table></div>");
 }
 
-static void WriteComparisonReport(BackendStats *bk, int nb)
+static void WriteComparisonReport(BackendStats *bk, int nb, const char *outPath)
 {
-    char cmpPath[MAX_PATH_LEN]; snprintf(cmpPath, sizeof(cmpPath), "report_comparison_%s.html", bk[0].label);
+    char cmpPath[MAX_PATH_LEN];
+    if (outPath) snprintf(cmpPath, sizeof(cmpPath), "%s", outPath);
+    else snprintf(cmpPath, sizeof(cmpPath), "report_comparison_%s.html", bk[0].label);
     FILE *f = fopen(cmpPath, "w");
     if (!f) { printf("ERROR: cannot write %s\n", cmpPath); return; }
 
@@ -361,6 +363,8 @@ int main(int argc, char **argv)
 {
     const char *defaults[3] = { "performance_rlgl.ini", "performance_rlsw.ini", "performance_rlvk.ini" };
     const char **configs; int nCfg;
+    const char *outPath = NULL;    // -o <file>: comparison report path (default report_comparison_<label>.html)
+    if ((argc > 2) && (strcmp(argv[1], "-o") == 0)) { outPath = argv[2]; argv += 2; argc -= 2; }
     if (argc > 1) { configs = (const char **)&argv[1]; nCfg = argc - 1; }
     else          { configs = defaults; nCfg = 3; }
 
@@ -382,7 +386,7 @@ int main(int argc, char **argv)
     }
 
     if (nb == 0) { printf("No backend captures found. Run performance_capture first.\n"); return 1; }
-    WriteComparisonReport(bk, nb);
+    WriteComparisonReport(bk, nb, outPath);
     printf("Done.\n");
     return 0;
 }

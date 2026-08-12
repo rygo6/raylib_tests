@@ -186,7 +186,15 @@ bash build_backend.sh rlvk                          # build raylib(rlvk) + curat
 (Add `.exe` to the tool names on Windows.)
 
 `performance_report` with no arguments reads the three standard configs and skips any backend
-that has no captures, so you can report on whatever subset you have run.
+that has no captures, so you can report on whatever subset you have run. Passing configs
+selects the backends to collate, and `-o <file>` names the comparison report (the default is
+`report_comparison_<first backend's label>.html`, which would collide when the same first
+config anchors more than one pairing) — the committed macOS pairwise reports are built this way:
+
+```sh
+./src/performance_report -o report_comparison_macos_gl_vs_kosmickrisp.html performance_rlgl.ini performance_rlvk_kosmickrisp.ini
+./src/performance_report -o report_comparison_macos_moltenvk_vs_kosmickrisp.html performance_rlvk_moltenvk.ini performance_rlvk_kosmickrisp.ini
+```
 
 ## Regression subset vs full suite
 
