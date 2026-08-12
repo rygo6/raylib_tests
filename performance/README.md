@@ -35,12 +35,12 @@ performance sibling of `DETERMINISTIC_IMAGE_COMPARISON_CAPTURE`):
 Every metric source is backend-agnostic — OpenGL, Vulkan and the software renderer are measured
 identically (software naturally reports ~0 VRAM):
 
-| | Windows | Linux |
-|---|---|---|
-| clock | `QueryPerformanceCounter` | `clock_gettime(CLOCK_MONOTONIC)` |
-| CPU | `GetProcessTimes` | `/proc/self/stat` utime+stime |
-| RAM | psapi working set | `/proc/self/statm` resident pages |
-| VRAM | DXGI `QueryVideoMemoryInfo` (local segment) | DRM `fdinfo` `drm-resident-vram`, summed over the process's DRM clients |
+| | Windows | Linux | macOS |
+|---|---|---|---|
+| clock | `QueryPerformanceCounter` | `clock_gettime(CLOCK_MONOTONIC)` | `clock_gettime(CLOCK_MONOTONIC)` |
+| CPU | `GetProcessTimes` | `/proc/self/stat` utime+stime | `getrusage(RUSAGE_SELF)` |
+| RAM | psapi working set | `/proc/self/statm` resident pages | mach `task_info` resident set |
+| VRAM | DXGI `QueryVideoMemoryInfo` (local segment) | DRM `fdinfo` `drm-resident-vram`, summed over the process's DRM clients | 0 by design (unified memory has no per-process VRAM metric; both backends report the same 0) |
 
 All Windows measurement entry points are resolved dynamically and the Linux ones are plain `/proc`
 reads, so example link lines are unchanged on both.
@@ -70,9 +70,19 @@ report_comparison.html    collated cross-backend comparison (not committed)
 ## Requirements
 
 The **raylib repo as a sibling** (`../raylib`) and gcc — MinGW-w64 on Windows, the system gcc on
-Linux. For rlvk: the Vulkan loader plus headers (Windows: the SDK with `VULKAN_SDK` set; Linux:
-`vulkan-headers` and a driver ICD), and `shaderc` at run time for custom-shader scenes. Backends
+Linux, Apple clang on macOS. For rlvk: the Vulkan loader plus headers (Windows: the SDK with
+`VULKAN_SDK` set; Linux: `vulkan-headers` and a driver ICD; macOS: Homebrew `molten-vk` +
+`vulkan-loader` + `vulkan-headers`), and `shaderc` at run time for custom-shader scenes. Backends
 share one `libraylib.a`, so each is built and captured fully before the next.
+
+macOS caveats: builds run at plain `-O2` (Apple clang has no gcda-flow PGO; `build_backend.sh`
+forces the no-PGO path so both backends stay at identical flags), the label auto-resolves to
+`macos_apple` through a MoltenVK probe, and a **~1.8 ms Metal present floor** (blocking drawable
+acquire; no MoltenVK config moves it — 3 swapchain images, fast-math, present-with-command-buffer,
+synchronous-submits and max-active-command-buffers were all A/B'd) bounds every scene lighter than
+that. Sub-floor scenes measure present pacing, not backend cost; treat them like the Linux
+µs-class CHECK-us verdicts. Keep the display awake (`caffeinate -dimsu`) for unattended runs:
+display sleep fails GLFW window creation.
 
 ## Build the tools
 
@@ -174,7 +184,8 @@ The label resolves as (both tools agree, so one machine is self-consistent):
    auto-resolve; the probe also supplies the adapter name, driver version and VRAM total that the
    reports print as provenance.
 
-The four target combinations are `windows_nvidia`, `windows_amd`, `linux_nvidia`, `linux_amd`.
+The target combinations are `windows_nvidia`, `windows_amd`, `linux_nvidia`, `linux_amd`, and
+`macos_apple` (the probe opts into portability enumeration, so MoltenVK's device is visible).
 On each machine just run `run_all.sh`; the labelled trees and reports can be committed side by
 side for cross-platform/vendor comparison.
 

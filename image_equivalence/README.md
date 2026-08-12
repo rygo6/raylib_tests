@@ -84,6 +84,19 @@ baseline-affecting changes or declaring a backend milestone. The regression conf
 tolerance/allowance settings of the scenes it includes; when `image_comparison_rlvk.ini` changes,
 mirror the change there.
 
+## macOS
+
+macOS compares against a **same-machine Apple GL baseline** (`rlgl_baseline_macos/`, generated
+locally, not committed) rather than the committed Windows baseline: cross-driver pixel variance
+exceeds cross-backend variance, so only a same-machine GL capture is a valid reference. Configs:
+`image_comparison_rlvk_macos.ini` (full suite) and `image_comparison_rlvk_macos_regression.ini`
+(subset) carry macOS-measured allowances for the stable Apple-GL-vs-Metal rasterization/ULP
+tie-break class (validated by two controls: GL-vs-GL and rlvk-vs-rlvk recaptures are bit-exact,
+the latter via `image_comparison_rlvk_selfcheck.ini`). Compute scenes are excluded on macOS —
+Apple GL tops out at 4.1, so no GL compute reference exists. Current state (2026-08-11, Apple
+M5 / MoltenVK 1.4.2): **457 bit-exact + 158 tolerated + 0 fail** of 637 frames, 22 skipped by
+design. Keep the display awake (`caffeinate -dimsu`) for unattended captures.
+
 ## Notes
 
 - A small per-channel **tolerance** (config `tolerance`) absorbs unavoidable 1-ulp GPU rounding.
