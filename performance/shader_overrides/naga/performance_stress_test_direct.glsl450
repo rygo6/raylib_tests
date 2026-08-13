@@ -1,0 +1,60 @@
+#version 450
+layout(location=0) out vec4 finalColor;
+layout(std140, binding=0) uniform U { vec2 uResolution; float uTime; int uSteps; };
+mat2 rot(float a){ float c=cos(a), s=sin(a); return mat2(c,-s,s,c); }
+float mandelbulb(vec3 pos){
+  vec3 z = pos; float dr = 1.0; float r = 0.0; const float power = 8.0;
+  for (int i = 0; i < 10; i++){
+    r = length(z); if (r > 2.0) break;
+    float theta = acos(z.z/r); float phi = atan(z.y, z.x);
+    dr = pow(r, power - 1.0)*power*dr + 1.0;
+    float zr = pow(r, power); theta *= power; phi *= power;
+    z = zr*vec3(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta)) + pos;
+  }
+  return 0.5*log(r)*r/dr;
+}
+float map(vec3 p){ p.xz = rot(uTime*0.15)*p.xz; p.xy = rot(uTime*0.1)*p.xy; return mandelbulb(p); }
+vec3 calcNormal(vec3 p){
+  vec2 e = vec2(0.0015, 0.0);
+  return normalize(vec3(map(p+e.xyy)-map(p-e.xyy), map(p+e.yxy)-map(p-e.yxy), map(p+e.yyx)-map(p-e.yyx)));
+}
+vec3 trace(vec2 fragXY){
+  const int MS = 160;
+  vec2 uv = (fragXY - 0.5*uResolution)/uResolution.y;
+  float ct = uTime*0.2;
+  vec3 ro = vec3(cos(ct)*2.6, 0.9*sin(uTime*0.17), sin(ct)*2.6);
+  vec3 fw = normalize(-ro);
+  vec3 rt = normalize(cross(fw, vec3(0.0,1.0,0.0)));
+  vec3 up = cross(rt, fw);
+  vec3 rd = normalize(uv.x*rt + uv.y*up + 1.8*fw);
+  float t = 0.0; float d = 1.0; int i;
+  for (i = 0; i < MS; i++){
+    vec3 p = ro + rd*t; d = map(p);
+    if (d < 0.0004 || t > 6.0) break;
+    t += d*0.7;
+  }
+  vec3 col = vec3(0.015, 0.02, 0.035);
+  if (d < 0.002 && t < 6.0){
+    vec3 p = ro + rd*t; vec3 n = calcNormal(p);
+    vec3 l = normalize(vec3(cos(uTime*0.5)*2.0, 2.0, sin(uTime*0.5)*2.0) - p);
+    float diff = max(dot(n, l), 0.0);
+    float spec = pow(max(dot(reflect(-l, n), -rd), 0.0), 24.0);
+    float glow = 1.0 - float(i)/float(MS);
+    vec3 base = 0.5 + 0.5*cos(3.0*p + vec3(0.0, 2.0, 4.0) + uTime);
+    col = base*(0.1 + diff*0.9) + spec*0.6 + base*glow*0.3;
+    col = mix(col, vec3(0.015,0.02,0.035), 1.0 - exp(-0.4*t*t));
+  }
+  return col;
+}
+void main(){
+  int n = uSteps; if (n < 1) n = 1;
+  vec3 col = vec3(0.0);
+  for (int s = 0; s < n; s++){
+    float fs = float(s);
+    vec2 jit = vec2(fract(sin(fs*12.9898)*43758.5453), fract(sin(fs*78.233)*43758.5453)) - 0.5;
+    col += trace(gl_FragCoord.xy + jit);
+  }
+  col /= float(n);
+  col = pow(col, vec3(0.4545));
+  finalColor = vec4(col, 1.0);
+}

@@ -52,7 +52,7 @@ static inline float3 tracef(float2 fragXY, constant U& u){
     }
     return col;
 }
-fragment float4 main0(float4 pos [[position]], constant U& u [[buffer(17)]])
+fragment float4 main0(float4 pos [[position]], constant U& u [[buffer(0)]])
 {
     int n = u.uSteps; if (n < 1) n = 1;
     float3 col = float3(0.0);

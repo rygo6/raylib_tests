@@ -326,7 +326,7 @@ struct pixelOutput_0
 
 
 #line 56
-[[fragment]] pixelOutput_0 main0(float4 pos_1 [[position]], U_0 constant* u_1 [[buffer(17)]])
+[[fragment]] pixelOutput_0 main0(float4 pos_1 [[position]], U_0 constant* u_1 [[buffer(0)]])
 {
 
 #line 56
