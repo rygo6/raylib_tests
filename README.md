@@ -110,23 +110,34 @@ rlmtl_slang | rlmtl_msl | rlmtl_angle | rlmtl_naga. The scene defeated 10-second
 measurement: at ~4 fps its camera-orbit cost curve (~31 s period) swings short-window
 medians ±20%, which produced contradictory verdicts across campaigns until the protocol
 moved to **60-second orbit-covering runs, rlgl and challengers interleaved ABBA** so both
-arms sample identical thermal states. Final medians (3×60 s): rlgl 242, handwritten MSL 245
-(**parity** — the honest ceiling: the scene is pure fragment ALU and both stacks saturate
-the same hardware), ANGLE 257, Slang 258, naga 285, GLSL-through-SPIRV-Cross 382. The GLSL
+arms sample identical thermal states. Medians (3×60 s): rlgl 242, handwritten MSL 245
+(parity), ANGLE 257, Slang 258, naga 285, GLSL-through-SPIRV-Cross 382. The GLSL
 translation-loss mechanism is SPIRV-Cross's flattened-SSA MSL defeating Metal's optimizer
 (a clean translation of the same rolled loops runs 1.5x faster); slangc's GLSL mode cannot
 compile stock GLSL matrix ops to Metal, hence the Slang-language port. Raymarching, the
-other fragment-heavy scene, is a clean win for every rlmtl variant (3.06–3.29 vs rlgl's
-3.42 ms). Net: **rlmtl beats rlgl on 18 of 19 scenes and holds parity on the mandelbulb
-via the MSL override.**
+other fragment-heavy scene, is a clean win for every rlmtl variant.
+
+Round 3 (2026-08-13) closed the ladder with **Mesa's own NIR→MSL compiler** run offline:
+`raylib/tools/nir2msl` builds Mesa's `kosmicomp` (the KosmicKrisp standalone SPIR-V→MSL
+compiler, MIT) and adapts its output to rlmtl's override conventions, with KK's two
+costly Metal-workarounds disabled (loop-guard counters and NaN-preserve predicates —
+semantics GL's fast-math compilation doesn't honor either; disabling measured
+pixel-identical). The Mesa-compiled mandelbulb FS **beats Apple's GL compiler outright:
+~174 vs ~214 ms, winning every ABBA-adjacent pair by 15–23%** — the first automatic
+translation to do so, faster than the hand-written MSL port. Pixel drift vs SPIRV-Cross
+is ULP-class only (84% of differing channels off by 1, max 17/255; Mesa lowers sin/cos
+to conformant polynomials). The seventh report column (`rlmtl_mesa`,
+`performance_rlmtl_mesa.ini`, override set `shader_overrides/mesa/`) carries a full
+19-scene capture. Net: **rlmtl beats rlgl on all 19 scenes, using only automatic
+translation** (stock GLSL path on 18, Mesa-precompiled MSL on the mandelbulb).
 
 Current state, **macOS / Apple M5 / rlmtl (native Metal)** (2026-08-12, same-window
 three-leg campaign): **rlmtl beats rlgl on 18 of 19 scenes** — 6–26x on light scenes
 (mailbox present thread + frame ring depth 3 remove every presentation and ring stall;
 bench_idle 0.013 vs 0.136 ms), 19.8x on 8000 draw calls, 33.5x on instancing, 5.8x waving
 cubes, 2.3x mixed stress. The one non-win is the fragment-ALU mandelbulb (0.63x through
-the stock shaderc+SPIRV-Cross path; the round-2 language ladder above closes it to parity
-with a handwritten-MSL override — not app-addressable through shaderc+SPIRV-Cross). RAM:
+the stock shaderc+SPIRV-Cross path; the language ladder above turns it into a 1.2x WIN
+via the Mesa NIR→MSL precompiler — not app-addressable through shaderc+SPIRV-Cross). RAM:
 rlmtl wins the light half (86–88 vs 92 MB), carries a few MB extra on shader-heavy scenes.
 
 Two run modes here as well: the **full suite** (`run_all.sh`, all scenes × all backends in one
