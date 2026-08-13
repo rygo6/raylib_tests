@@ -27,3 +27,16 @@ report_software_stack.html
 report_rlvk_linux_amd.html
 rlvk_lavapipe/
 rlgl_llvmpipe/
+
+# macOS per-machine artifacts: baselines and candidates are machine-local (cross-driver
+# variance exceeds cross-backend variance, so they are never meaningful off-machine).
+# Only the .ini configs (thresholds/allowances) are committed.
+rlgl_baseline_macos/
+rlgl_macos_check/
+rlmtl_macos/
+rlvk_macos_*/
+report_rlmtl*.html
+report_rlvk_macos*.html
+report_glglcheck.html
+report_rlvk_selfcheck.html
+tmp_*.ini

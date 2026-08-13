@@ -100,25 +100,33 @@ GL on either ICD: **4–4.8×** on 8000 draw calls, **1.8–2.3×** on the mixed
 per-process VRAM reports 0 on both backends by design (Apple Silicon unified memory has no
 per-process VRAM metric).
 
-The shader-language campaign (2026-08-12, round 2) closed the last loss:
-`report_comparison_macos_rlmtl_languages.html` carries four columns — rlgl | rlmtl (GLSL) |
-rlmtl_slang | rlmtl_msl. The GLSL column wins 17/19 outright plus raymarching at parity-win
-(verified by cool isolated A/B; multi-leg campaigns thermally skew fragment-heavy scenes);
-the mandelbulb falls to the language ladder: **Slang 83 ms and handwritten MSL 74 ms vs
-rlgl's 245 ms** (the Slang variant is pixel-identical to the GLSL path — probed at two
-camera positions; sources in `performance/shader_overrides/`, injected per shader via
-`RLMTL_MSL_OVERRIDE`, keyed by SPIR-V hash). Net: **rlmtl ≥ rlgl on all 19 scenes.** The
-GLSL translation loss mechanism is SPIRV-Cross's flattened-SSA MSL defeating Metal's
-optimizer (a clean translation of identical rolled loops runs 1.5x faster); slangc's GLSL
-mode cannot compile stock GLSL matrix ops to Metal, hence the Slang-language port.
+The shader-language campaign (2026-08-12, round 2) attacked the mandelbulb loss with a
+translator ladder — Slang, handwritten MSL, Google ANGLE (`angle_shader_translator`, direct
+AST-level GLSL→MSL), and naga — injected per shader via `RLMTL_MSL_OVERRIDE` (keyed by
+SPIR-V hash; sources in `performance/shader_overrides/`, every variant pixel-cross-verified
+against the GLSL path before timing).
+`report_comparison_macos_rlmtl_languages.html` carries six columns — rlgl | rlmtl (GLSL) |
+rlmtl_slang | rlmtl_msl | rlmtl_angle | rlmtl_naga. The scene defeated 10-second
+measurement: at ~4 fps its camera-orbit cost curve (~31 s period) swings short-window
+medians ±20%, which produced contradictory verdicts across campaigns until the protocol
+moved to **60-second orbit-covering runs, rlgl and challengers interleaved ABBA** so both
+arms sample identical thermal states. Final medians (3×60 s): rlgl 242, handwritten MSL 245
+(**parity** — the honest ceiling: the scene is pure fragment ALU and both stacks saturate
+the same hardware), ANGLE 257, Slang 258, naga 285, GLSL-through-SPIRV-Cross 382. The GLSL
+translation-loss mechanism is SPIRV-Cross's flattened-SSA MSL defeating Metal's optimizer
+(a clean translation of the same rolled loops runs 1.5x faster); slangc's GLSL mode cannot
+compile stock GLSL matrix ops to Metal, hence the Slang-language port. Raymarching, the
+other fragment-heavy scene, is a clean win for every rlmtl variant (3.06–3.29 vs rlgl's
+3.42 ms). Net: **rlmtl beats rlgl on 18 of 19 scenes and holds parity on the mandelbulb
+via the MSL override.**
 
 Current state, **macOS / Apple M5 / rlmtl (native Metal)** (2026-08-12, same-window
 three-leg campaign): **rlmtl beats rlgl on 18 of 19 scenes** — 6–26x on light scenes
 (mailbox present thread + frame ring depth 3 remove every presentation and ring stall;
 bench_idle 0.013 vs 0.136 ms), 19.8x on 8000 draw calls, 33.5x on instancing, 5.8x waving
-cubes, 2.3x mixed stress. The one loss is the fragment-ALU mandelbulb (0.65x): SPIRV-Cross
-keeps its multi-exit raymarch loop rolled where Mesa's NIR unrolls it (verified against
-KosmicKrisp's MSL dump); measured not app-addressable through shaderc+SPIRV-Cross. RAM:
+cubes, 2.3x mixed stress. The one non-win is the fragment-ALU mandelbulb (0.63x through
+the stock shaderc+SPIRV-Cross path; the round-2 language ladder above closes it to parity
+with a handwritten-MSL override — not app-addressable through shaderc+SPIRV-Cross). RAM:
 rlmtl wins the light half (86–88 vs 92 MB), carries a few MB extra on shader-heavy scenes.
 
 Two run modes here as well: the **full suite** (`run_all.sh`, all scenes × all backends in one
