@@ -321,7 +321,11 @@ static void ComparisonTable(FILE *f, BackendStats *bk, int nb, const char *title
         if (dup) fprintf(f, "<th>%s (%s)</th>", bk[k].backend, bk[k].label);
         else fprintf(f, "<th>%s</th>", bk[k].backend);
     }
-    if (nb == 2) fprintf(f, "<th>%s speedup</th>", bk[1].backend);
+    if (nb == 2)
+    {
+        if (dup) fprintf(f, "<th>%s (%s) speedup</th>", bk[1].backend, bk[1].label);
+        else fprintf(f, "<th>%s speedup</th>", bk[1].backend);
+    }
     fprintf(f, "</tr>");
 
     // Rows follow the first backend's example order
@@ -428,6 +432,8 @@ static void WriteComparisonReport(BackendStats *bk, int nb, const char *outPath)
     // rlvk column is present.
     { bool macosVk = false; for (int k = 0; k < nb; k++) if ((strstr(bk[k].os, "macOS") != NULL) && (strncmp(bk[k].backend, "rlvk", 4) == 0)) macosVk = true; if (macosVk) WriteMacosFloorCallout(f); }
     { for (int k = 0; k < nb; k++) if (strcmp(bk[k].backend, "rlmtl_mesa") == 0) { WriteMesaOverrideCallout(f); break; } }
+    if (nb == 2) fprintf(f, "<p class=sub><b>speedup</b> = %s relative to %s, per metric direction (&gt;1x favors %s); &#176; on a ratio means at least one side sits at its floor, so it compares present plumbing.</p>",
+        bk[1].backend, bk[0].backend, bk[1].backend);
 
     ComparisonTable(f, bk, nb, "Frames per second (higher is better)", "Sustained FPS at full speed (uncapped).", M_FPS, "%.0f");
     ComparisonTable(f, bk, nb, "Median frame time, ms (lower is better)", "Median per-frame CPU wall time.", M_MEDIAN, "%.3f");
