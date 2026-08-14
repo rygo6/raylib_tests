@@ -128,8 +128,10 @@ translation to do so, faster than the hand-written MSL port. Pixel drift vs SPIR
 is ULP-class only (84% of differing channels off by 1, max 17/255; Mesa lowers sin/cos
 to conformant polynomials). The seventh report column (`rlmtl_mesa`,
 `performance_rlmtl_mesa.ini`, override set `shader_overrides/mesa/`) carries a full
-19-scene capture. Net: **rlmtl beats rlgl on all 19 scenes, using only automatic
-translation** (stock GLSL path on 18, Mesa-precompiled MSL on the mandelbulb).
+19-scene capture, and the two-column `report_comparison_macos_rlmtl.html` pairs rlgl
+against this shipping configuration (a callout in both reports names the Mesa compiler).
+Net: **rlmtl beats rlgl on all 19 scenes, using only automatic translation** (stock GLSL
+path on 18, Mesa-precompiled MSL on the mandelbulb).
 
 Current state, **macOS / Apple M5 / rlmtl (native Metal)** (2026-08-12, same-window
 three-leg campaign): **rlmtl beats rlgl on 18 of 19 scenes** — 6–26x on light scenes

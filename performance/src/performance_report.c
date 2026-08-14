@@ -363,6 +363,23 @@ static void ComparisonTable(FILE *f, BackendStats *bk, int nb, const char *title
     fprintf(f, "</table></div>");
 }
 
+// Mesa NIR->MSL override callout: emitted whenever an rlmtl_* variant column carries the
+// precompiled-shader override set, so the reader knows which translation produced the
+// mandelbulb row. Evidence measured 2026-08-13 (Apple M5, 60s ABBA interleave).
+static void WriteMesaOverrideCallout(FILE *f)
+{
+    fprintf(f, "<div class=callout><b>rlmtl_mesa = the native Metal backend + Mesa's shader compiler.</b> "
+        "This column runs rlmtl's stock pipeline (GLSL &rarr; shaderc &rarr; SPIR-V &rarr; SPIRV-Cross &rarr; MSL) on every "
+        "scene except <code>performance_stress_test_direct</code>, whose fragment shader is precompiled offline "
+        "by <code>raylib/tools/nir2msl</code> through <b>Mesa's NIR&rarr;MSL compiler</b> (the KosmicKrisp backend's "
+        "<code>kosmicomp</code>, MIT) and injected via <code>RLMTL_MSL_OVERRIDE</code>. On that scene SPIRV-Cross's "
+        "flattened-SSA output defeats Metal's optimizer (382 ms); Mesa's NIR pipeline emits MSL that beats Apple's "
+        "own GL compiler &mdash; ~174 vs ~214 ms, winning every 60&#8201;s ABBA-interleaved pair by 15&ndash;23%% &mdash; "
+        "the only automatic GLSL translation measured to do so (hand-written MSL: 245; ANGLE 257; Slang 258; naga 285). "
+        "Pixel drift vs SPIRV-Cross is ULP-class only (84%% of differing channels off by 1, max 17/255; Mesa lowers "
+        "sin/cos to conformant polynomials).</div>");
+}
+
 static void WriteComparisonReport(BackendStats *bk, int nb, const char *outPath)
 {
     char cmpPath[MAX_PATH_LEN];
@@ -385,6 +402,7 @@ static void WriteComparisonReport(BackendStats *bk, int nb, const char *outPath)
     fprintf(f, "<p class=sub>Green = best backend for that example/metric, red = worst. Frame time &amp; FPS are the representative run; software (rlsw) has no GPU so its VRAM is ~0. Shader-heavy examples may not execute custom shaders on the software backend.</p>");
     fprintf(f, "<p class=sub><b>&#176; = at that backend's floor</b> (median within 15%% of its own bench_idle median): the scene finishes its real work faster than one present/loop turnaround, so the number measures presentation pacing or loop overhead, not rendering cost, and cross-backend ratios there compare present plumbing. On macOS, Metal-backed Vulkan presents pace on drawable acquire (~1.6-1.8 ms) while GL's IOSurface flush has no floor - only rows without &#176; compare backend rendering cost.</p>");
     { bool anyMacos = false; for (int k = 0; k < nb; k++) if (strstr(bk[k].os, "macOS") != NULL) anyMacos = true; if (anyMacos) WriteMacosFloorCallout(f); }
+    { for (int k = 0; k < nb; k++) if (strcmp(bk[k].backend, "rlmtl_mesa") == 0) { WriteMesaOverrideCallout(f); break; } }
 
     ComparisonTable(f, bk, nb, "Frames per second (higher is better)", "Sustained FPS at full speed (uncapped).", M_FPS, "%.0f");
     ComparisonTable(f, bk, nb, "Median frame time, ms (lower is better)", "Median per-frame CPU wall time.", M_MEDIAN, "%.3f");

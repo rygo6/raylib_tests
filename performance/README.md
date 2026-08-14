@@ -120,6 +120,30 @@ it — that change alone took bench_instanced from 3.40 to 1.85 ms. What remains
 itself: **any scene whose real work is under ~1.8 ms measures present pacing, not backend
 cost** — the macOS analogue of the Linux µs-class CHECK-us policy, with a 10× higher bar.
 
+### rlmtl (native Metal) and the shader-language columns
+
+`performance_rlmtl.ini` captures the native Metal backend (`build_backend.sh rlmtl`; no
+Vulkan ICD, so the label stays `macos_apple`). The `performance_rlmtl_{slang,msl,angle,naga,mesa}.ini`
+variants are the **shader-translation ladder** for the fragment-ALU mandelbulb
+(`performance_stress_test_direct`), where SPIRV-Cross's flattened-SSA MSL defeats Metal's
+optimizer: each variant re-captures the same build with `RLMTL_MSL_OVERRIDE=shader_overrides/<name>`
+injecting one precompiled fragment shader (keyed by SPIR-V FNV hash; every other scene runs
+the stock GLSL→shaderc→SPIRV-Cross path). Sources sit beside each compiled override.
+The winner is `mesa`: `raylib/tools/nir2msl` drives Mesa's `kosmicomp` (the KosmicKrisp
+NIR→MSL compiler, MIT) offline with KK's loop-guard/NaN-preserve workarounds disabled —
+it beats Apple's GL compiler 15–23% per 60 s ABBA-interleaved pair (~174 vs ~214 ms), the
+only automatic translation to do so (hand MSL 245, ANGLE 257, Slang 258, naga 285,
+SPIRV-Cross 382). Committed reports: `report_comparison_macos_rlmtl.html` (rlgl vs
+`rlmtl_mesa`, the shipping configuration, with a callout naming the Mesa compiler) and
+`report_comparison_macos_rlmtl_languages.html` (all seven columns).
+
+**Heavy-scene measurement protocol** (learned the hard way on the mandelbulb): at ~4 fps
+its ~31 s camera orbit swings 10 s-window medians ±20%, so short windows produced
+contradictory verdicts. Heavy-scene A/Bs need **60 s orbit-covering runs with the two arms
+interleaved ABBA** (identical thermal states, snapshotted binaries via `RAYLIB_PERF_*` env
+so no rebuilds sit between legs); fragment-heavy scenes in multi-leg campaigns need a
+cooldown before each leg or they measure the thermal ramp.
+
 ### KosmicKrisp: the same floor is driver-specific — and Mesa has the knob
 
 Mesa's KosmicKrisp (conformant Vulkan 1.4 on Metal 4, Homebrew `mesa` on macOS 26+) advertises
