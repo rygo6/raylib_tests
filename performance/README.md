@@ -134,8 +134,13 @@ NIR→MSL compiler, MIT) offline with KK's loop-guard/NaN-preserve workarounds d
 it beats Apple's GL compiler 15–23% per 60 s ABBA-interleaved pair (~174 vs ~214 ms), the
 only automatic translation to do so (hand MSL 245, ANGLE 257, Slang 258, naga 285,
 SPIRV-Cross 382). Committed reports: `report_comparison_macos_rlmtl.html` (rlgl vs
-`rlmtl_mesa`, the shipping configuration, with a callout naming the Mesa compiler) and
-`report_comparison_macos_rlmtl_languages.html` (all seven columns).
+`rlmtl_mesa`, the shipping configuration, with a callout naming the Mesa compiler and a
+per-row speedup column — two-backend comparisons always get one) and
+`report_comparison_macos_rlmtl_languages.html` (all seven columns). The macOS
+present-floor callout does NOT appear on these reports by design: the drawable-acquire
+floor is a Vulkan-on-Metal property, and neither rlgl (IOSurface flush) nor rlmtl
+(mailbox present thread) pays it — the report tool emits it only when an rlvk column
+is present.
 
 **Heavy-scene measurement protocol** (learned the hard way on the mandelbulb): at ~4 fps
 its ~31 s camera orbit swings 10 s-window medians ±20%, so short windows produced

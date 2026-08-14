@@ -321,6 +321,7 @@ static void ComparisonTable(FILE *f, BackendStats *bk, int nb, const char *title
         if (dup) fprintf(f, "<th>%s (%s)</th>", bk[k].backend, bk[k].label);
         else fprintf(f, "<th>%s</th>", bk[k].backend);
     }
+    if (nb == 2) fprintf(f, "<th>%s speedup</th>", bk[1].backend);
     fprintf(f, "</tr>");
 
     // Rows follow the first backend's example order
@@ -357,6 +358,25 @@ static void ComparisonTable(FILE *f, BackendStats *bk, int nb, const char *title
             fprintf(f, fmt, vals[k]);
             if (atFloor) fprintf(f, "&#176;");
             fprintf(f, "</td>");
+        }
+        // Two-backend comparisons get a speedup column: second backend relative to the
+        // first (>1x = second faster/lighter). Ratios where either side sits at its floor
+        // keep the degree mark - they compare present plumbing, not rendering.
+        if (nb == 2)
+        {
+            if (has[0] && has[1] && (vals[0] > 0) && (vals[1] > 0))
+            {
+                double ratio = HigherBetter(m) ? (vals[1]/vals[0]) : (vals[0]/vals[1]);
+                bool anyFloor = false;
+                for (int k = 0; k < 2; k++)
+                {
+                    double floorMs = BackendFloorMs(&bk[k]);
+                    if (frameMetric && (floorMs > 0) && (meds[k] <= floorMs*1.15)) anyFloor = true;
+                }
+                const char *cls = (ratio >= 1.05) ? "best" : (ratio <= 0.95) ? "worst" : "";
+                fprintf(f, "<td class='%s'><b>%.2fx</b>%s</td>", cls, ratio, anyFloor ? "&#176;" : "");
+            }
+            else fprintf(f, "<td class=na>&mdash;</td>");
         }
         fprintf(f, "</tr>");
     }
@@ -400,8 +420,13 @@ static void WriteComparisonReport(BackendStats *bk, int nb, const char *outPath)
     fprintf(f, " &nbsp;|&nbsp; <b>GPU</b> %s (%d MB) &nbsp;|&nbsp; <b>Driver</b> %s &nbsp;|&nbsp; <b>OS</b> %s &nbsp;|&nbsp; %d runs &times; %d ms full speed</p>",
         bk[0].gpu, bk[0].vramTotalMB, bk[0].gpuDriver, bk[0].osVersion, bk[0].runs, bk[0].durationMs);
     fprintf(f, "<p class=sub>Green = best backend for that example/metric, red = worst. Frame time &amp; FPS are the representative run; software (rlsw) has no GPU so its VRAM is ~0. Shader-heavy examples may not execute custom shaders on the software backend.</p>");
-    fprintf(f, "<p class=sub><b>&#176; = at that backend's floor</b> (median within 15%% of its own bench_idle median): the scene finishes its real work faster than one present/loop turnaround, so the number measures presentation pacing or loop overhead, not rendering cost, and cross-backend ratios there compare present plumbing. On macOS, Metal-backed Vulkan presents pace on drawable acquire (~1.6-1.8 ms) while GL's IOSurface flush has no floor - only rows without &#176; compare backend rendering cost.</p>");
-    { bool anyMacos = false; for (int k = 0; k < nb; k++) if (strstr(bk[k].os, "macOS") != NULL) anyMacos = true; if (anyMacos) WriteMacosFloorCallout(f); }
+    { bool macosVk = false; for (int k = 0; k < nb; k++) if ((strstr(bk[k].os, "macOS") != NULL) && (strncmp(bk[k].backend, "rlvk", 4) == 0)) macosVk = true;
+    fprintf(f, "<p class=sub><b>&#176; = at that backend's floor</b> (median within 15%% of its own bench_idle median): the scene finishes its real work faster than one present/loop turnaround, so the number measures presentation pacing or loop overhead, not rendering cost, and cross-backend ratios there compare present plumbing.%s</p>",
+        macosVk ? " On macOS, Metal-backed Vulkan presents pace on drawable acquire (~1.6-1.8 ms) while GL's IOSurface flush has no floor - only rows without &#176; compare backend rendering cost." : ""); }
+    // The drawable-acquire floor is a Vulkan-on-Metal property: rlgl presents via IOSurface
+    // flush and rlmtl via its mailbox present thread, so the callout only applies when an
+    // rlvk column is present.
+    { bool macosVk = false; for (int k = 0; k < nb; k++) if ((strstr(bk[k].os, "macOS") != NULL) && (strncmp(bk[k].backend, "rlvk", 4) == 0)) macosVk = true; if (macosVk) WriteMacosFloorCallout(f); }
     { for (int k = 0; k < nb; k++) if (strcmp(bk[k].backend, "rlmtl_mesa") == 0) { WriteMesaOverrideCallout(f); break; } }
 
     ComparisonTable(f, bk, nb, "Frames per second (higher is better)", "Sustained FPS at full speed (uncapped).", M_FPS, "%.0f");
