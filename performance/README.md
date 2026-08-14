@@ -135,8 +135,12 @@ it beats Apple's GL compiler 15–23% per 60 s ABBA-interleaved pair (~174 vs ~2
 only automatic translation to do so (hand MSL 245, ANGLE 257, Slang 258, naga 285,
 SPIRV-Cross 382). Committed reports: `report_comparison_macos_rlmtl.html` (rlgl vs
 `rlmtl_mesa`, the shipping configuration, with a callout naming the Mesa compiler and a
-per-row speedup column — two-backend comparisons always get one) and
-`report_comparison_macos_rlmtl_languages.html` (all seven columns). The macOS
+per-row speedup column — two-backend comparisons always get one),
+`report_comparison_macos_rlmtl_languages.html` (all seven columns), and
+`report_comparison_macos_moltenvk_vs_rlmtl.html` (the two Metal-backed backends
+head-to-head: rlvk-on-MoltenVK vs rlmtl_mesa — rlmtl leads 18/19, e.g. mandelbulb
+1.87x, drawcalls 4.89x°, idle 32.9x° off the drawable-acquire floor; MoltenVK keeps
+only the mixed-batch stress scene at 0.92x). The macOS
 present-floor callout does NOT appear on these reports by design: the drawable-acquire
 floor is a Vulkan-on-Metal property, and neither rlgl (IOSurface flush) nor rlmtl
 (mailbox present thread) pays it — the report tool emits it only when an rlvk column
