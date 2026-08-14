@@ -140,7 +140,11 @@ per-row speedup column — two-backend comparisons always get one),
 `report_comparison_macos_moltenvk_vs_rlmtl.html` (the two Metal-backed backends
 head-to-head: rlvk-on-MoltenVK vs rlmtl_mesa — rlmtl leads 18/19, e.g. mandelbulb
 1.87x, drawcalls 4.89x°, idle 32.9x° off the drawable-acquire floor; MoltenVK keeps
-only the mixed-batch stress scene at 0.92x). The macOS
+only the mixed-batch stress scene at 0.92x) and
+`report_comparison_macos_kosmickrisp_vs_rlmtl.html` (rlvk-on-KosmicKrisp vs rlmtl_mesa —
+a 19/19 sweep for rlmtl, mixed stress included; the mandelbulb row is a controlled
+comparison of the SAME Mesa NIR→MSL compiler in-driver vs offline-with-workarounds-off:
+236.3 vs 173.7 ms, 1.36x). The macOS
 present-floor callout does NOT appear on these reports by design: the drawable-acquire
 floor is a Vulkan-on-Metal property, and neither rlgl (IOSurface flush) nor rlmtl
 (mailbox present thread) pays it — the report tool emits it only when an rlvk column
