@@ -157,6 +157,24 @@ interleaved ABBA** (identical thermal states, snapshotted binaries via `RAYLIB_P
 so no rebuilds sit between legs); fragment-heavy scenes in multi-leg campaigns need a
 cooldown before each leg or they measure the thermal ramp.
 
+### Threaded-present patched ICDs: the floor removed at the source
+
+Both Vulkan-on-Metal drivers were patched locally with rlmtl's mailbox design (the app
+thread never touches a CAMetalDrawable; a per-swapchain worker absorbs the pacing with
+latest-wins dropping): MoltenVK `~/Developer/MoltenVK` branch `threaded-present`
+(`MVK_THREADED_PRESENT=1`), KosmicKrisp `~/Developer/mesa` branch `kk-threaded-present`
+(automatic; needed an MTL4-queue commit mutex — MTL4CommandQueue is not thread-safe —
+after the present worker's concurrent commits intermittently hung GPU-heavy scenes).
+Full 19-scene captures (`performance_rlvk_{moltenvk,kosmickrisp}_threaded.ini`, labels
+`macos_*_threaded`) feed four committed reports with the speedup column:
+`report_comparison_macos_{moltenvk,kosmickrisp}_stock_vs_threaded.html` — MoltenVK 16/19
+wins (bench_idle 16.9x, skybox 29x, instanced 15.1x; GPU-bound fragment scenes pay the
+worker's extra blit, 0.91–0.98x) and KosmicKrisp 16/19 (idle 7.1x, skybox 7.1x) — and
+`report_comparison_macos_{moltenvk,kosmickrisp}_threaded_vs_rlmtl.html` — rlmtl_mesa
+still leads everything, but the gap collapses from 5–33x to 1.3–6.5x: what remains is
+per-frame driver stack, not presentation. Both patched drivers pass the 37-scene image
+regression subset with zero new failures and were verified on-screen by window capture.
+
 ### KosmicKrisp: the same floor is driver-specific — and Mesa has the knob
 
 Mesa's KosmicKrisp (conformant Vulkan 1.4 on Metal 4, Homebrew `mesa` on macOS 26+) advertises
