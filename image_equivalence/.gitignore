@@ -40,3 +40,10 @@ report_rlvk_macos*.html
 report_glglcheck.html
 report_rlvk_selfcheck.html
 tmp_*.ini
+
+# rldx12 (Direct3D 12 backend) run outputs
+rldx12/
+rldx12_regression/
+rldx12_probe/
+rldx12_compute_probe/
+report_rldx12_probe.html
