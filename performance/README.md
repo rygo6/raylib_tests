@@ -120,6 +120,17 @@ it — that change alone took bench_instanced from 3.40 to 1.85 ms. What remains
 itself: **any scene whose real work is under ~1.8 ms measures present pacing, not backend
 cost** — the macOS analogue of the Linux µs-class CHECK-us policy, with a 10× higher bar.
 
+### Comparison-report naming scheme
+
+Comparison pages are named by their COLUMNS, in column order, one token per backend
+config: `report_comparison_<platform>_<col1>_<col2>[...].html`. Tokens: `gl` = rlgl,
+`sw` = rlsw, `vk` = rlvk (platforms with a single Vulkan driver), `mvk` / `kk` = rlvk on
+MoltenVK / KosmicKrisp, `mvkthreaded` / `kkthreaded` = the threaded-present patched ICDs,
+`mtl` = rlmtl (stock GLSL pipeline), and `mtlmesa` / `mtlslang` / `mtlmsl` / `mtlangle` /
+`mtlnaga` = rlmtl with that shader-translation override column. So
+`report_comparison_macos_mvk_mtlmesa.html` is rlvk-on-MoltenVK (left) vs rlmtl with the
+Mesa-compiled override (right).
+
 ### rlmtl (native Metal) and the shader-language columns
 
 `performance_rlmtl.ini` captures the native Metal backend (`build_backend.sh rlmtl`; no
@@ -133,15 +144,15 @@ The winner is `mesa`: `raylib/tools/nir2msl` drives Mesa's `kosmicomp` (the Kosm
 NIR→MSL compiler, MIT) offline with KK's loop-guard/NaN-preserve workarounds disabled —
 it beats Apple's GL compiler 15–23% per 60 s ABBA-interleaved pair (~174 vs ~214 ms), the
 only automatic translation to do so (hand MSL 245, ANGLE 257, Slang 258, naga 285,
-SPIRV-Cross 382). Committed reports: `report_comparison_macos_rlmtl.html` (rlgl vs
+SPIRV-Cross 382). Committed reports: `report_comparison_macos_gl_mtlmesa.html` (rlgl vs
 `rlmtl_mesa`, the shipping configuration, with a callout naming the Mesa compiler and a
 per-row speedup column — two-backend comparisons always get one),
-`report_comparison_macos_rlmtl_languages.html` (all seven columns), and
-`report_comparison_macos_moltenvk_vs_rlmtl.html` (the two Metal-backed backends
+`report_comparison_macos_gl_mtl_mtlslang_mtlmsl_mtlangle_mtlnaga_mtlmesa.html` (all seven columns), and
+`report_comparison_macos_mvk_mtlmesa.html` (the two Metal-backed backends
 head-to-head: rlvk-on-MoltenVK vs rlmtl_mesa — rlmtl leads 18/19, e.g. mandelbulb
 1.87x, drawcalls 4.89x°, idle 32.9x° off the drawable-acquire floor; MoltenVK keeps
 only the mixed-batch stress scene at 0.92x) and
-`report_comparison_macos_kosmickrisp_vs_rlmtl.html` (rlvk-on-KosmicKrisp vs rlmtl_mesa —
+`report_comparison_macos_kk_mtlmesa.html` (rlvk-on-KosmicKrisp vs rlmtl_mesa —
 a 19/19 sweep for rlmtl, mixed stress included; the mandelbulb row is a controlled
 comparison of the SAME Mesa NIR→MSL compiler in-driver vs offline-with-workarounds-off:
 236.3 vs 173.7 ms, 1.36x). The macOS
@@ -247,8 +258,8 @@ selects the backends to collate, and `-o <file>` names the comparison report (th
 config anchors more than one pairing) — the committed macOS pairwise reports are built this way:
 
 ```sh
-./src/performance_report -o report_comparison_macos_gl_vs_kosmickrisp.html performance_rlgl.ini performance_rlvk_kosmickrisp.ini
-./src/performance_report -o report_comparison_macos_moltenvk_vs_kosmickrisp.html performance_rlvk_moltenvk.ini performance_rlvk_kosmickrisp.ini
+./src/performance_report -o report_comparison_macos_gl_kk.html performance_rlgl.ini performance_rlvk_kosmickrisp.ini
+./src/performance_report -o report_comparison_macos_mvk_kk.html performance_rlvk_moltenvk.ini performance_rlvk_kosmickrisp.ini
 ```
 
 ## Regression subset vs full suite

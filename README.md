@@ -60,7 +60,7 @@ all backends captured back-to-back in one session so machine-state drift cannot 
 comparison. Output: one HTML report per backend plus a cross-backend comparison, stamped with
 OS, GPU, and driver provenance (`report_*_windows_nvidia.html`, `report_*_linux_amd.html` and
 the macOS reports are committed; on macOS the rlvk label names the Vulkan-on-Metal ICD —
-`report_rlvk_macos_moltenvk.html`, `report_comparison_macos_moltenvk.html` — while rlgl keeps
+`report_rlvk_macos_moltenvk.html`, `report_comparison_macos_mvk_kk_gl.html` — while rlgl keeps
 `report_rlgl_macos_apple.html`).
 
 Current state, **Windows / RTX 4090 / NVIDIA 595.97**: rlvk leads rlgl on 17 of 19 scenes
@@ -105,7 +105,7 @@ translator ladder — Slang, handwritten MSL, Google ANGLE (`angle_shader_transl
 AST-level GLSL→MSL), and naga — injected per shader via `RLMTL_MSL_OVERRIDE` (keyed by
 SPIR-V hash; sources in `performance/shader_overrides/`, every variant pixel-cross-verified
 against the GLSL path before timing).
-`report_comparison_macos_rlmtl_languages.html` carries six columns — rlgl | rlmtl (GLSL) |
+`report_comparison_macos_gl_mtl_mtlslang_mtlmsl_mtlangle_mtlnaga_mtlmesa.html` carries six columns — rlgl | rlmtl (GLSL) |
 rlmtl_slang | rlmtl_msl | rlmtl_angle | rlmtl_naga. The scene defeated 10-second
 measurement: at ~4 fps its camera-orbit cost curve (~31 s period) swings short-window
 medians ±20%, which produced contradictory verdicts across campaigns until the protocol
@@ -128,7 +128,7 @@ translation to do so, faster than the hand-written MSL port. Pixel drift vs SPIR
 is ULP-class only (84% of differing channels off by 1, max 17/255; Mesa lowers sin/cos
 to conformant polynomials). The seventh report column (`rlmtl_mesa`,
 `performance_rlmtl_mesa.ini`, override set `shader_overrides/mesa/`) carries a full
-19-scene capture, and the two-column `report_comparison_macos_rlmtl.html` pairs rlgl
+19-scene capture, and the two-column `report_comparison_macos_gl_mtlmesa.html` pairs rlgl
 against this shipping configuration (a callout in both reports names the Mesa compiler).
 Net: **rlmtl beats rlgl on all 19 scenes, using only automatic translation** (stock GLSL
 path on 18, Mesa-precompiled MSL on the mandelbulb).
