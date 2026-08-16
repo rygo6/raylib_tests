@@ -77,7 +77,16 @@ case "$BACKEND" in
         if [ "$HOST_OS" != macos ]; then echo "ERROR: rlmtl is macOS-only"; exit 1; fi
         # Native Metal backend: spirv-cross static libs (SPIR-V -> MSL) + Cocoa frameworks
         EX_LDLIBS="-lraylib -L/opt/homebrew/lib -lspirv-cross-c -lspirv-cross-msl -lspirv-cross-hlsl -lspirv-cross-glsl -lspirv-cross-cpp -lspirv-cross-reflect -lspirv-cross-util -lspirv-cross-core -lc++ -framework Foundation -framework AppKit -framework Cocoa -framework IOKit -framework CoreAudio -framework CoreVideo -framework Metal -framework QuartzCore" ;;
-  *) echo "usage: $0 <rlgl|rlsw|rlvk|rlmtl>"; exit 2 ;;
+  rldx12) GRAPHICS=GRAPHICS_API_DIRECTX_12
+        if [ "$HOST_OS" != windows ]; then echo "ERROR: rldx12 is Windows-only"; exit 1; fi
+        # Native D3D12 backend: inbox import libs; the runtime GLSL path dlopens
+        # shaderc_shared.dll + spirv-cross-c-shared.dll from the Vulkan SDK's Bin
+        if [ -n "${VULKAN_SDK:-}" ]; then
+          VKLIB=$(cygpath -m "$VULKAN_SDK" 2>/dev/null || echo "${VULKAN_SDK//\\//}")
+          export PATH="$(cygpath -u "$VKLIB" 2>/dev/null || echo "$VKLIB")/Bin:$PATH"
+        fi
+        EX_LDLIBS="-lraylib -ld3d12 -ldxgi -ldxguid -ld3dcompiler -lgdi32 -lwinmm -luser32 -lkernel32" ;;
+  *) echo "usage: $0 <rlgl|rlsw|rlvk|rlmtl|rldx12>"; exit 2 ;;
 esac
 
 echo "==================================================================="
