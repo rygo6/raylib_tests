@@ -197,6 +197,8 @@ static const char *CSS =
 static double MB(double bytes) { return bytes/(1024.0*1024.0); }
 
 //----------------------------------------------------------------------------------
+static const char* DisplayName(const BackendStats *b, char *buf, int bufSize);
+
 // Per-backend report
 //----------------------------------------------------------------------------------
 // macOS present-floor callout: emitted at the top of every macOS report involving a Vulkan
@@ -225,8 +227,9 @@ static void WriteBackendReport(BackendStats *b)
     char path[MAX_PATH_LEN]; snprintf(path, sizeof(path), "report_%s_%s.html", b->backend, b->label);
     FILE *f = fopen(path, "w"); if (!f) { printf("ERROR: cannot write %s\n", path); return; }
 
-    fprintf(f, "<!doctype html><html><head><meta charset=utf-8><meta name=viewport content=\"width=device-width,initial-scale=1\"><title>raylib perf - %s</title>%s</head><body>", b->backend, CSS);
-    fprintf(f, "<h1>raylib performance &mdash; <span style='color:var(--acc)'>%s</span></h1>", b->backend);
+    char nameBuf[128]; const char *dispName = DisplayName(b, nameBuf, sizeof(nameBuf));
+    fprintf(f, "<!doctype html><html><head><meta charset=utf-8><meta name=viewport content=\"width=device-width,initial-scale=1\"><title>raylib perf - %s</title>%s</head><body>", dispName, CSS);
+    fprintf(f, "<h1>raylib performance &mdash; <span style='color:var(--acc)'>%s</span></h1>", dispName);
     fprintf(f, "<p class=env><b>GPU</b> %s (%d MB) &nbsp;|&nbsp; <b>Driver</b> %s &nbsp;|&nbsp; <b>OS</b> %s &nbsp;|&nbsp; <b>%d</b> runs &times; <b>%d</b> ms (+%d ms warmup) at full speed</p>",
             b->gpu, b->vramTotalMB, b->gpuDriver, b->osVersion, b->runs, b->durationMs, b->warmupMs);
     if ((strstr(b->os, "macOS") != NULL) && (strcmp(b->backend, "rlvk") == 0)) WriteMacosFloorCallout(f);
@@ -291,11 +294,35 @@ static double MetricVal(RunStats *a, Metric m)
 // true if higher is better for this metric
 static bool HigherBetter(Metric m) { return (m == M_FPS); }
 
+// Display name for a backend column. On macOS one rlvk binary can run on different
+// Vulkan-on-Metal ICDs (MoltenVK, KosmicKrisp, and their threaded-present patches), so
+// a bare "rlvk" is ambiguous: surface the ICD from the label, e.g. "rlvk (moltenvk
+// threaded)". Other backends and platforms keep their plain name.
+static const char* DisplayName(const BackendStats *b, char *buf, int bufSize)
+{
+    if ((strcmp(b->backend, "rlvk") == 0) && (strncmp(b->label, "macos_", 6) == 0))
+    {
+        snprintf(buf, bufSize, "%s (%s", b->backend, b->label + 6);
+        for (char *c = buf; *c; c++) if (*c == '_') *c = ' ';
+        size_t len = strlen(buf);
+        if (len + 1 < (size_t)bufSize) { buf[len] = ')'; buf[len + 1] = 0; }
+        return buf;
+    }
+    return b->backend;
+}
+
 // true if two compared backends share a name (e.g. rlvk under two Vulkan ICDs) so column
 // headers must append the label to stay distinguishable
+// Duplicate check runs on DISPLAY names: two rlvk columns on different macOS ICDs are
+// already distinct as "rlvk (moltenvk)" vs "rlvk (kosmickrisp threaded)" and need no
+// raw-label disambiguation.
 static bool DuplicateBackendNames(BackendStats *bk, int nb)
 {
-    for (int i = 0; i < nb; i++) for (int j = i+1; j < nb; j++) if (strcmp(bk[i].backend, bk[j].backend) == 0) return true;
+    for (int i = 0; i < nb; i++) for (int j = i+1; j < nb; j++)
+    {
+        char bi[128], bj[128];
+        if (strcmp(DisplayName(&bk[i], bi, sizeof(bi)), DisplayName(&bk[j], bj, sizeof(bj))) == 0) return true;
+    }
     return false;
 }
 
@@ -318,13 +345,15 @@ static void ComparisonTable(FILE *f, BackendStats *bk, int nb, const char *title
     fprintf(f, "<tr><th class=name>Example</th>");
     for (int k = 0; k < nb; k++)
     {
-        if (dup) fprintf(f, "<th>%s (%s)</th>", bk[k].backend, bk[k].label);
-        else fprintf(f, "<th>%s</th>", bk[k].backend);
+        char nameBuf[128]; const char *dispName = DisplayName(&bk[k], nameBuf, sizeof(nameBuf));
+        if (dup) fprintf(f, "<th>%s (%s)</th>", dispName, bk[k].label);
+        else fprintf(f, "<th>%s</th>", dispName);
     }
     if (nb == 2)
     {
-        if (dup) fprintf(f, "<th>%s (%s) speedup</th>", bk[1].backend, bk[1].label);
-        else fprintf(f, "<th>%s speedup</th>", bk[1].backend);
+        char nameBuf[128]; const char *dispName = DisplayName(&bk[1], nameBuf, sizeof(nameBuf));
+        if (dup) fprintf(f, "<th>%s (%s) speedup</th>", dispName, bk[1].label);
+        else fprintf(f, "<th>%s speedup</th>", dispName);
     }
     fprintf(f, "</tr>");
 
@@ -418,8 +447,9 @@ static void WriteComparisonReport(BackendStats *bk, int nb, const char *outPath)
     fprintf(f, "<p class=env>");
     for (int k = 0; k < nb; k++)
     {
-        if (dup) fprintf(f, "%s<b>%s</b> (%s, %s)", (k?" &nbsp;vs&nbsp; ":""), bk[k].backend, bk[k].label, bk[k].gpuDriver);
-        else fprintf(f, "%s<b>%s</b>", (k?" &nbsp;vs&nbsp; ":""), bk[k].backend);
+        char nameBuf[128]; const char *dispName = DisplayName(&bk[k], nameBuf, sizeof(nameBuf));
+        if (dup) fprintf(f, "%s<b>%s</b> (%s, %s)", (k?" &nbsp;vs&nbsp; ":""), dispName, bk[k].label, bk[k].gpuDriver);
+        else fprintf(f, "%s<b>%s</b>", (k?" &nbsp;vs&nbsp; ":""), dispName);
     }
     fprintf(f, " &nbsp;|&nbsp; <b>GPU</b> %s (%d MB) &nbsp;|&nbsp; <b>Driver</b> %s &nbsp;|&nbsp; <b>OS</b> %s &nbsp;|&nbsp; %d runs &times; %d ms full speed</p>",
         bk[0].gpu, bk[0].vramTotalMB, bk[0].gpuDriver, bk[0].osVersion, bk[0].runs, bk[0].durationMs);
@@ -432,8 +462,9 @@ static void WriteComparisonReport(BackendStats *bk, int nb, const char *outPath)
     // rlvk column is present.
     { bool macosVk = false; for (int k = 0; k < nb; k++) if ((strstr(bk[k].os, "macOS") != NULL) && (strncmp(bk[k].backend, "rlvk", 4) == 0)) macosVk = true; if (macosVk) WriteMacosFloorCallout(f); }
     { for (int k = 0; k < nb; k++) if (strcmp(bk[k].backend, "rlmtl_mesa") == 0) { WriteMesaOverrideCallout(f); break; } }
-    if (nb == 2) fprintf(f, "<p class=sub><b>speedup</b> = %s relative to %s, per metric direction (&gt;1x favors %s); &#176; on a ratio means at least one side sits at its floor, so it compares present plumbing.</p>",
-        bk[1].backend, bk[0].backend, bk[1].backend);
+    if (nb == 2) { char nb0[128], nb1[128];
+    fprintf(f, "<p class=sub><b>speedup</b> = %s relative to %s, per metric direction (&gt;1x favors %s); &#176; on a ratio means at least one side sits at its floor, so it compares present plumbing.</p>",
+        DisplayName(&bk[1], nb1, sizeof(nb1)), DisplayName(&bk[0], nb0, sizeof(nb0)), nb1); }
 
     ComparisonTable(f, bk, nb, "Frames per second (higher is better)", "Sustained FPS at full speed (uncapped).", M_FPS, "%.0f");
     ComparisonTable(f, bk, nb, "Median frame time, ms (lower is better)", "Median per-frame CPU wall time.", M_MEDIAN, "%.3f");
