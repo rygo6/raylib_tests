@@ -507,12 +507,12 @@ static void WriteComparisonReport(BackendStats *bk, int nb, const char *outPath)
 //----------------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-    const char *defaults[3] = { "performance_rlgl.ini", "performance_rlsw.ini", "performance_rlvk.ini" };
+    const char *defaults[4] = { "performance_rlgl.ini", "performance_rlsw.ini", "performance_rlvk.ini", "performance_rldx12.ini" };
     const char **configs; int nCfg;
     const char *outPath = NULL;    // -o <file>: comparison report path (default report_comparison_<label>.html)
     if ((argc > 2) && (strcmp(argv[1], "-o") == 0)) { outPath = argv[2]; argv += 2; argc -= 2; }
     if (argc > 1) { configs = (const char **)&argv[1]; nCfg = argc - 1; }
-    else          { configs = defaults; nCfg = 3; }
+    else          { configs = defaults; nCfg = 4; }
 
     static BackendStats bk[MAX_BACKENDS];
     int nb = 0;

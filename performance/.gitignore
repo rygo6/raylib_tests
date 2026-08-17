@@ -17,3 +17,5 @@ src/performance_report
 
 # rlmtl (native Metal) captures follow the same rule
 rlmtl_*/
+rldx12_*/
+stale_*/
