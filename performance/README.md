@@ -120,6 +120,17 @@ it — that change alone took bench_instanced from 3.40 to 1.85 ms. What remains
 itself: **any scene whose real work is under ~1.8 ms measures present pacing, not backend
 cost** — the macOS analogue of the Linux µs-class CHECK-us policy, with a 10× higher bar.
 
+### Occlusion poisons uncapped captures (fixed 2026-08-17)
+
+If a bench window is covered by another window, macOS paces that app's GPU command-buffer
+completions at display cadence: medians stay true but sustained FPS collapses to ~the
+refresh rate (signature: median in microseconds, p99/max pinned at 16.6 ms, ~350 FPS).
+This poisoned the FPS/avg cells of the first three scenes of the 2026-08-12 plain-rlmtl
+leg (medians — and therefore every verdict and speedup ratio — were unaffected; those
+scenes were recaptured 2026-08-17). PERFORMANCE_CAPTURE windows are now created TOPMOST
+so desktop arrangement cannot occlude them. Sanity-check any capture showing that
+signature before trusting its FPS column.
+
 ### Comparison-report naming scheme
 
 Comparison pages are named by their COLUMNS, in column order, one token per backend
