@@ -1,0 +1,1949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>raylib image comparison</title>
+<style>
+  :root{color-scheme:dark light} body{font-family:system-ui,Segoe UI,Roboto,sans-serif;margin:0;padding:24px;background:#14161a;color:#e6e6e6}
+  h1{margin:0 0 4px} .sub{color:#9aa0a6;margin-bottom:20px}
+  .summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+  .pill{padding:10px 16px;border-radius:10px;font-weight:600}
+  .pill.ok{background:#123d1a;color:#5ee27a} .pill.bad{background:#3d1212;color:#ff8080} .pill.neutral{background:#22262c;color:#cfd3d8} .pill.warn{background:#3d3212;color:#e0b64a}
+  .verdict{font-size:20px;font-weight:700;padding:12px 18px;border-radius:10px;display:inline-block;margin-bottom:24px}
+  .verdict.pass{background:#123d1a;color:#5ee27a} .verdict.fail{background:#3d1212;color:#ff8080}
+  h2{border-bottom:1px solid #2a2e35;padding-bottom:6px;margin-top:32px}
+  .card{background:#1c1f25;border:1px solid #2a2e35;border-radius:10px;padding:16px;margin:16px 0}
+  .card h3{margin:0 0 4px} .meta{color:#9aa0a6;font-size:14px;margin-bottom:12px}
+  .imgs{display:flex;gap:16px;flex-wrap:wrap} .imgs figure{margin:0} .imgs img{max-width:360px;width:100%;border:1px solid #2a2e35;background:#000;image-rendering:pixelated}
+  figcaption{font-size:13px;color:#9aa0a6;margin-top:4px}
+  .list{columns:3;column-gap:24px} .list div{font-size:13px;break-inside:avoid} .ok{color:#5ee27a} .excl{color:#e0b64a}
+  details>summary{cursor:pointer;font-size:18px;font-weight:700;margin-top:24px}
+</style>
+</head>
+<body>
+<h1>raylib image comparison</h1>
+<div class="sub">reference vs candidate deterministic frame captures (per-channel tolerance 2)</div>
+<div class="verdict pass">ALL PASS</div>
+<div class="summary">
+  <div class="pill ok">457 matched</div>
+  <div class="pill neutral">0 pixel diffs</div>
+  <div class="pill neutral">0 size mismatch</div>
+  <div class="pill neutral">0 missing</div>
+  <div class="pill warn">158 tolerated</div>
+  <div class="pill neutral">22 skipped</div>
+</div>
+<h2>Tolerated &mdash; expected variability, within allowance (158)</h2>
+<div class="card">
+<h3>audio_mixed_processor / frame_0030.png</h3>
+<div class="meta">36 of 360000 pixels differ (0.010%), max channel delta 167 &mdash; allowance 150</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/audio_mixed_processor/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/audio_mixed_processor/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/audio_mixed_processor/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>audio_module_playing / frame_0000.png</h3>
+<div class="meta">217 of 360000 pixels differ (0.060%), max channel delta 3 &mdash; allowance 16000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/audio_module_playing/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/audio_module_playing/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/audio_module_playing/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>audio_module_playing / frame_0010.png</h3>
+<div class="meta">2646 of 360000 pixels differ (0.735%), max channel delta 42 &mdash; allowance 16000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/audio_module_playing/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/audio_module_playing/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/audio_module_playing/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>audio_module_playing / frame_0030.png</h3>
+<div class="meta">2834 of 360000 pixels differ (0.787%), max channel delta 167 &mdash; allowance 16000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/audio_module_playing/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/audio_module_playing/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/audio_module_playing/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>audio_music_stream / frame_0030.png</h3>
+<div class="meta">10 of 360000 pixels differ (0.003%), max channel delta 167 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/audio_music_stream/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/audio_music_stream/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/audio_music_stream/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>audio_stream_effects / frame_0030.png</h3>
+<div class="meta">10 of 360000 pixels differ (0.003%), max channel delta 167 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/audio_stream_effects/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/audio_stream_effects/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/audio_stream_effects/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_2d_camera_mouse_zoom / frame_0000.png</h3>
+<div class="meta">1502 of 360000 pixels differ (0.417%), max channel delta 54 &mdash; allowance 4500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_2d_camera_mouse_zoom/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_2d_camera_mouse_zoom/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_2d_camera_mouse_zoom/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_2d_camera_mouse_zoom / frame_0010.png</h3>
+<div class="meta">1502 of 360000 pixels differ (0.417%), max channel delta 54 &mdash; allowance 4500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_2d_camera_mouse_zoom/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_2d_camera_mouse_zoom/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_2d_camera_mouse_zoom/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_2d_camera_mouse_zoom / frame_0030.png</h3>
+<div class="meta">1502 of 360000 pixels differ (0.417%), max channel delta 54 &mdash; allowance 4500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_2d_camera_mouse_zoom/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_2d_camera_mouse_zoom/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_2d_camera_mouse_zoom/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_3d_camera_first_person / frame_0000.png</h3>
+<div class="meta">8 of 360000 pixels differ (0.002%), max channel delta 212 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_3d_camera_first_person/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_3d_camera_first_person/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_3d_camera_first_person/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_3d_camera_first_person / frame_0010.png</h3>
+<div class="meta">8 of 360000 pixels differ (0.002%), max channel delta 212 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_3d_camera_first_person/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_3d_camera_first_person/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_3d_camera_first_person/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_3d_camera_first_person / frame_0030.png</h3>
+<div class="meta">8 of 360000 pixels differ (0.002%), max channel delta 212 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_3d_camera_first_person/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_3d_camera_first_person/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_3d_camera_first_person/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_3d_camera_fps / frame_0000.png</h3>
+<div class="meta">8 of 360000 pixels differ (0.002%), max channel delta 150 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_3d_camera_fps/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_3d_camera_fps/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_3d_camera_fps/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_3d_camera_fps / frame_0010.png</h3>
+<div class="meta">8 of 360000 pixels differ (0.002%), max channel delta 150 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_3d_camera_fps/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_3d_camera_fps/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_3d_camera_fps/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_3d_camera_fps / frame_0030.png</h3>
+<div class="meta">8 of 360000 pixels differ (0.002%), max channel delta 150 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_3d_camera_fps/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_3d_camera_fps/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_3d_camera_fps/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_highdpi_testbed / frame_0000.png</h3>
+<div class="meta">1540 of 1440000 pixels differ (0.107%), max channel delta 45 &mdash; allowance 4500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_highdpi_testbed/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_highdpi_testbed/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_highdpi_testbed/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_highdpi_testbed / frame_0010.png</h3>
+<div class="meta">1540 of 1440000 pixels differ (0.107%), max channel delta 45 &mdash; allowance 4500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_highdpi_testbed/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_highdpi_testbed/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_highdpi_testbed/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_highdpi_testbed / frame_0030.png</h3>
+<div class="meta">1540 of 1440000 pixels differ (0.107%), max channel delta 45 &mdash; allowance 4500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_highdpi_testbed/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_highdpi_testbed/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_highdpi_testbed/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_input_gestures_testbed / frame_0000.png</h3>
+<div class="meta">4 of 360000 pixels differ (0.001%), max channel delta 55 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_input_gestures_testbed/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_input_gestures_testbed/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_input_gestures_testbed/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_input_gestures_testbed / frame_0010.png</h3>
+<div class="meta">4 of 360000 pixels differ (0.001%), max channel delta 55 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_input_gestures_testbed/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_input_gestures_testbed/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_input_gestures_testbed/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_input_gestures_testbed / frame_0030.png</h3>
+<div class="meta">4 of 360000 pixels differ (0.001%), max channel delta 55 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_input_gestures_testbed/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_input_gestures_testbed/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_input_gestures_testbed/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_random_sequence / frame_0000.png</h3>
+<div class="meta">57 of 360000 pixels differ (0.016%), max channel delta 227 &mdash; allowance 200</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_random_sequence/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_random_sequence/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_random_sequence/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_random_sequence / frame_0010.png</h3>
+<div class="meta">57 of 360000 pixels differ (0.016%), max channel delta 227 &mdash; allowance 200</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_random_sequence/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_random_sequence/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_random_sequence/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_random_sequence / frame_0030.png</h3>
+<div class="meta">57 of 360000 pixels differ (0.016%), max channel delta 227 &mdash; allowance 200</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_random_sequence/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_random_sequence/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_random_sequence/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_undo_redo / frame_0000.png</h3>
+<div class="meta">21 of 360000 pixels differ (0.006%), max channel delta 115 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_undo_redo/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_undo_redo/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_undo_redo/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_undo_redo / frame_0010.png</h3>
+<div class="meta">21 of 360000 pixels differ (0.006%), max channel delta 115 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_undo_redo/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_undo_redo/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_undo_redo/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_undo_redo / frame_0030.png</h3>
+<div class="meta">21 of 360000 pixels differ (0.006%), max channel delta 115 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_undo_redo/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_undo_redo/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_undo_redo/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_vr_simulator / frame_0000.png</h3>
+<div class="meta">149 of 360000 pixels differ (0.041%), max channel delta 150 &mdash; allowance 500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_vr_simulator/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_vr_simulator/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_vr_simulator/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_vr_simulator / frame_0010.png</h3>
+<div class="meta">149 of 360000 pixels differ (0.041%), max channel delta 150 &mdash; allowance 500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_vr_simulator/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_vr_simulator/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_vr_simulator/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>core_vr_simulator / frame_0030.png</h3>
+<div class="meta">149 of 360000 pixels differ (0.041%), max channel delta 150 &mdash; allowance 500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/core_vr_simulator/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/core_vr_simulator/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/core_vr_simulator/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_basic_voxel / frame_0000.png</h3>
+<div class="meta">190 of 360000 pixels differ (0.053%), max channel delta 191 &mdash; allowance 600</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_basic_voxel/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_basic_voxel/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_basic_voxel/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_basic_voxel / frame_0010.png</h3>
+<div class="meta">190 of 360000 pixels differ (0.053%), max channel delta 191 &mdash; allowance 600</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_basic_voxel/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_basic_voxel/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_basic_voxel/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_basic_voxel / frame_0030.png</h3>
+<div class="meta">190 of 360000 pixels differ (0.053%), max channel delta 191 &mdash; allowance 600</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_basic_voxel/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_basic_voxel/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_basic_voxel/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_box_collisions / frame_0000.png</h3>
+<div class="meta">10 of 360000 pixels differ (0.003%), max channel delta 118 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_box_collisions/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_box_collisions/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_box_collisions/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_box_collisions / frame_0010.png</h3>
+<div class="meta">10 of 360000 pixels differ (0.003%), max channel delta 118 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_box_collisions/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_box_collisions/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_box_collisions/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_box_collisions / frame_0030.png</h3>
+<div class="meta">10 of 360000 pixels differ (0.003%), max channel delta 118 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_box_collisions/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_box_collisions/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_box_collisions/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_cubicmap_rendering / frame_0000.png</h3>
+<div class="meta">29 of 360000 pixels differ (0.008%), max channel delta 224 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_cubicmap_rendering/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_cubicmap_rendering/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_cubicmap_rendering/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_cubicmap_rendering / frame_0010.png</h3>
+<div class="meta">8 of 360000 pixels differ (0.002%), max channel delta 106 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_cubicmap_rendering/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_cubicmap_rendering/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_cubicmap_rendering/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_cubicmap_rendering / frame_0030.png</h3>
+<div class="meta">18 of 360000 pixels differ (0.005%), max channel delta 231 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_cubicmap_rendering/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_cubicmap_rendering/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_cubicmap_rendering/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_decals / frame_0000.png</h3>
+<div class="meta">636 of 360000 pixels differ (0.177%), max channel delta 59 &mdash; allowance 6000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_decals/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_decals/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_decals/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_decals / frame_0010.png</h3>
+<div class="meta">636 of 360000 pixels differ (0.177%), max channel delta 59 &mdash; allowance 6000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_decals/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_decals/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_decals/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_decals / frame_0030.png</h3>
+<div class="meta">636 of 360000 pixels differ (0.177%), max channel delta 59 &mdash; allowance 6000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_decals/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_decals/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_decals/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_first_person_maze / frame_0000.png</h3>
+<div class="meta">1 of 360000 pixels differ (0.000%), max channel delta 9 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_first_person_maze/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_first_person_maze/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_first_person_maze/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_first_person_maze / frame_0010.png</h3>
+<div class="meta">1 of 360000 pixels differ (0.000%), max channel delta 9 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_first_person_maze/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_first_person_maze/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_first_person_maze/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_first_person_maze / frame_0030.png</h3>
+<div class="meta">1 of 360000 pixels differ (0.000%), max channel delta 9 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_first_person_maze/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_first_person_maze/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_first_person_maze/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_geometric_shapes / frame_0000.png</h3>
+<div class="meta">40 of 360000 pixels differ (0.011%), max channel delta 194 &mdash; allowance 150</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_geometric_shapes/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_geometric_shapes/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_geometric_shapes/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_geometric_shapes / frame_0010.png</h3>
+<div class="meta">40 of 360000 pixels differ (0.011%), max channel delta 194 &mdash; allowance 150</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_geometric_shapes/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_geometric_shapes/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_geometric_shapes/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_geometric_shapes / frame_0030.png</h3>
+<div class="meta">40 of 360000 pixels differ (0.011%), max channel delta 194 &mdash; allowance 150</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_geometric_shapes/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_geometric_shapes/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_geometric_shapes/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_heightmap_rendering / frame_0030.png</h3>
+<div class="meta">1 of 360000 pixels differ (0.000%), max channel delta 191 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_heightmap_rendering/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_heightmap_rendering/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_heightmap_rendering/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_loading / frame_0000.png</h3>
+<div class="meta">30 of 360000 pixels differ (0.008%), max channel delta 143 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_loading/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_loading/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_loading/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_loading / frame_0010.png</h3>
+<div class="meta">37 of 360000 pixels differ (0.010%), max channel delta 160 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_loading/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_loading/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_loading/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_loading / frame_0030.png</h3>
+<div class="meta">70 of 360000 pixels differ (0.019%), max channel delta 158 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_loading/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_loading/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_loading/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_loading_iqm / frame_0010.png</h3>
+<div class="meta">2 of 360000 pixels differ (0.001%), max channel delta 6 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_loading_iqm/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_loading_iqm/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_loading_iqm/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_mesh_generation / frame_0030.png</h3>
+<div class="meta">6 of 360000 pixels differ (0.002%), max channel delta 191 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_mesh_generation/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_mesh_generation/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_mesh_generation/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_mesh_picking / frame_0000.png</h3>
+<div class="meta">2 of 360000 pixels differ (0.001%), max channel delta 54 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_mesh_picking/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_mesh_picking/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_mesh_picking/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_mesh_picking / frame_0010.png</h3>
+<div class="meta">2 of 360000 pixels differ (0.001%), max channel delta 54 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_mesh_picking/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_mesh_picking/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_mesh_picking/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_mesh_picking / frame_0030.png</h3>
+<div class="meta">2 of 360000 pixels differ (0.001%), max channel delta 54 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_mesh_picking/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_mesh_picking/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_mesh_picking/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_orthographic_projection / frame_0000.png</h3>
+<div class="meta">35 of 360000 pixels differ (0.010%), max channel delta 194 &mdash; allowance 150</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_orthographic_projection/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_orthographic_projection/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_orthographic_projection/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_orthographic_projection / frame_0010.png</h3>
+<div class="meta">35 of 360000 pixels differ (0.010%), max channel delta 194 &mdash; allowance 150</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_orthographic_projection/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_orthographic_projection/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_orthographic_projection/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_orthographic_projection / frame_0030.png</h3>
+<div class="meta">35 of 360000 pixels differ (0.010%), max channel delta 194 &mdash; allowance 150</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_orthographic_projection/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_orthographic_projection/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_orthographic_projection/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_point_rendering / frame_0000.png</h3>
+<div class="meta">1 of 360000 pixels differ (0.000%), max channel delta 255 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_point_rendering/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_point_rendering/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_point_rendering/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_point_rendering / frame_0010.png</h3>
+<div class="meta">1 of 360000 pixels differ (0.000%), max channel delta 255 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_point_rendering/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_point_rendering/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_point_rendering/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_point_rendering / frame_0030.png</h3>
+<div class="meta">1 of 360000 pixels differ (0.000%), max channel delta 255 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_point_rendering/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_point_rendering/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_point_rendering/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_rotating_cube / frame_0030.png</h3>
+<div class="meta">4 of 360000 pixels differ (0.001%), max channel delta 128 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_rotating_cube/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_rotating_cube/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_rotating_cube/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_waving_cubes / frame_0000.png</h3>
+<div class="meta">22 of 360000 pixels differ (0.006%), max channel delta 188 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_waving_cubes/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_waving_cubes/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_waving_cubes/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_waving_cubes / frame_0030.png</h3>
+<div class="meta">1 of 360000 pixels differ (0.000%), max channel delta 188 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_waving_cubes/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_waving_cubes/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_waving_cubes/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_yaw_pitch_roll / frame_0000.png</h3>
+<div class="meta">167 of 360000 pixels differ (0.046%), max channel delta 168 &mdash; allowance 500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_yaw_pitch_roll/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_yaw_pitch_roll/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_yaw_pitch_roll/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_yaw_pitch_roll / frame_0010.png</h3>
+<div class="meta">167 of 360000 pixels differ (0.046%), max channel delta 168 &mdash; allowance 500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_yaw_pitch_roll/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_yaw_pitch_roll/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_yaw_pitch_roll/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>models_yaw_pitch_roll / frame_0030.png</h3>
+<div class="meta">167 of 360000 pixels differ (0.046%), max channel delta 168 &mdash; allowance 500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/models_yaw_pitch_roll/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/models_yaw_pitch_roll/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/models_yaw_pitch_roll/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_basic_lighting / frame_0000.png</h3>
+<div class="meta">3031 of 360000 pixels differ (0.842%), max channel delta 97 &mdash; allowance 20000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_basic_lighting/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_basic_lighting/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_basic_lighting/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_basic_lighting / frame_0010.png</h3>
+<div class="meta">3006 of 360000 pixels differ (0.835%), max channel delta 105 &mdash; allowance 20000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_basic_lighting/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_basic_lighting/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_basic_lighting/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_basic_lighting / frame_0030.png</h3>
+<div class="meta">4043 of 360000 pixels differ (1.123%), max channel delta 64 &mdash; allowance 20000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_basic_lighting/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_basic_lighting/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_basic_lighting/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_basic_pbr / frame_0000.png</h3>
+<div class="meta">1247 of 360000 pixels differ (0.346%), max channel delta 64 &mdash; allowance 8000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_basic_pbr/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_basic_pbr/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_basic_pbr/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_basic_pbr / frame_0010.png</h3>
+<div class="meta">1431 of 360000 pixels differ (0.398%), max channel delta 64 &mdash; allowance 8000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_basic_pbr/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_basic_pbr/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_basic_pbr/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_basic_pbr / frame_0030.png</h3>
+<div class="meta">1585 of 360000 pixels differ (0.440%), max channel delta 89 &mdash; allowance 8000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_basic_pbr/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_basic_pbr/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_basic_pbr/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_cel_shading / frame_0000.png</h3>
+<div class="meta">4371 of 360000 pixels differ (1.214%), max channel delta 121 &mdash; allowance 20000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_cel_shading/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_cel_shading/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_cel_shading/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_cel_shading / frame_0010.png</h3>
+<div class="meta">4011 of 360000 pixels differ (1.114%), max channel delta 121 &mdash; allowance 20000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_cel_shading/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_cel_shading/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_cel_shading/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_cel_shading / frame_0030.png</h3>
+<div class="meta">3198 of 360000 pixels differ (0.888%), max channel delta 175 &mdash; allowance 20000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_cel_shading/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_cel_shading/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_cel_shading/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_custom_uniform / frame_0000.png</h3>
+<div class="meta">13 of 360000 pixels differ (0.004%), max channel delta 49 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_custom_uniform/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_custom_uniform/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_custom_uniform/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_custom_uniform / frame_0010.png</h3>
+<div class="meta">23 of 360000 pixels differ (0.006%), max channel delta 49 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_custom_uniform/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_custom_uniform/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_custom_uniform/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_custom_uniform / frame_0030.png</h3>
+<div class="meta">13 of 360000 pixels differ (0.004%), max channel delta 63 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_custom_uniform/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_custom_uniform/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_custom_uniform/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_eratosthenes_sieve / frame_0000.png</h3>
+<div class="meta">17068 of 360000 pixels differ (4.741%), max channel delta 255 &mdash; allowance 50000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_eratosthenes_sieve/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_eratosthenes_sieve/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_eratosthenes_sieve/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_eratosthenes_sieve / frame_0010.png</h3>
+<div class="meta">17068 of 360000 pixels differ (4.741%), max channel delta 255 &mdash; allowance 50000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_eratosthenes_sieve/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_eratosthenes_sieve/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_eratosthenes_sieve/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_eratosthenes_sieve / frame_0030.png</h3>
+<div class="meta">17068 of 360000 pixels differ (4.741%), max channel delta 255 &mdash; allowance 50000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_eratosthenes_sieve/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_eratosthenes_sieve/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_eratosthenes_sieve/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_fog_rendering / frame_0000.png</h3>
+<div class="meta">1386 of 360000 pixels differ (0.385%), max channel delta 58 &mdash; allowance 6000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_fog_rendering/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_fog_rendering/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_fog_rendering/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_fog_rendering / frame_0010.png</h3>
+<div class="meta">1317 of 360000 pixels differ (0.366%), max channel delta 42 &mdash; allowance 6000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_fog_rendering/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_fog_rendering/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_fog_rendering/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_fog_rendering / frame_0030.png</h3>
+<div class="meta">1327 of 360000 pixels differ (0.369%), max channel delta 36 &mdash; allowance 6000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_fog_rendering/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_fog_rendering/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_fog_rendering/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_hybrid_rendering / frame_0000.png</h3>
+<div class="meta">129 of 360000 pixels differ (0.036%), max channel delta 91 &mdash; allowance 500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_hybrid_rendering/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_hybrid_rendering/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_hybrid_rendering/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_hybrid_rendering / frame_0010.png</h3>
+<div class="meta">148 of 360000 pixels differ (0.041%), max channel delta 98 &mdash; allowance 500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_hybrid_rendering/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_hybrid_rendering/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_hybrid_rendering/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_hybrid_rendering / frame_0030.png</h3>
+<div class="meta">151 of 360000 pixels differ (0.042%), max channel delta 143 &mdash; allowance 500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_hybrid_rendering/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_hybrid_rendering/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_hybrid_rendering/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_julia_set / frame_0000.png</h3>
+<div class="meta">120 of 360000 pixels differ (0.033%), max channel delta 255 &mdash; allowance 500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_julia_set/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_julia_set/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_julia_set/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_julia_set / frame_0010.png</h3>
+<div class="meta">120 of 360000 pixels differ (0.033%), max channel delta 255 &mdash; allowance 500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_julia_set/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_julia_set/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_julia_set/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_julia_set / frame_0030.png</h3>
+<div class="meta">120 of 360000 pixels differ (0.033%), max channel delta 255 &mdash; allowance 500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_julia_set/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_julia_set/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_julia_set/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_lightmap_rendering / frame_0000.png</h3>
+<div class="meta">340 of 360000 pixels differ (0.094%), max channel delta 61 &mdash; allowance 2000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_lightmap_rendering/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_lightmap_rendering/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_lightmap_rendering/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_lightmap_rendering / frame_0010.png</h3>
+<div class="meta">388 of 360000 pixels differ (0.108%), max channel delta 61 &mdash; allowance 2000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_lightmap_rendering/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_lightmap_rendering/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_lightmap_rendering/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_lightmap_rendering / frame_0030.png</h3>
+<div class="meta">450 of 360000 pixels differ (0.125%), max channel delta 61 &mdash; allowance 2000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_lightmap_rendering/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_lightmap_rendering/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_lightmap_rendering/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_mandelbrot_set / frame_0000.png</h3>
+<div class="meta">725 of 360000 pixels differ (0.201%), max channel delta 255 &mdash; allowance 2000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_mandelbrot_set/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_mandelbrot_set/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_mandelbrot_set/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_mandelbrot_set / frame_0010.png</h3>
+<div class="meta">725 of 360000 pixels differ (0.201%), max channel delta 255 &mdash; allowance 2000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_mandelbrot_set/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_mandelbrot_set/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_mandelbrot_set/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_mandelbrot_set / frame_0030.png</h3>
+<div class="meta">725 of 360000 pixels differ (0.201%), max channel delta 255 &mdash; allowance 2000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_mandelbrot_set/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_mandelbrot_set/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_mandelbrot_set/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_mesh_instancing / frame_0000.png</h3>
+<div class="meta">1 of 360000 pixels differ (0.000%), max channel delta 226 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_mesh_instancing/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_mesh_instancing/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_mesh_instancing/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_mesh_instancing / frame_0010.png</h3>
+<div class="meta">4 of 360000 pixels differ (0.001%), max channel delta 226 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_mesh_instancing/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_mesh_instancing/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_mesh_instancing/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_mesh_instancing / frame_0030.png</h3>
+<div class="meta">1 of 360000 pixels differ (0.000%), max channel delta 226 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_mesh_instancing/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_mesh_instancing/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_mesh_instancing/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_model_shader / frame_0000.png</h3>
+<div class="meta">6927 of 360000 pixels differ (1.924%), max channel delta 65 &mdash; allowance 27000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_model_shader/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_model_shader/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_model_shader/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_model_shader / frame_0010.png</h3>
+<div class="meta">6927 of 360000 pixels differ (1.924%), max channel delta 65 &mdash; allowance 27000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_model_shader/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_model_shader/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_model_shader/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_model_shader / frame_0030.png</h3>
+<div class="meta">6927 of 360000 pixels differ (1.924%), max channel delta 65 &mdash; allowance 27000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_model_shader/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_model_shader/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_model_shader/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_normalmap_rendering / frame_0000.png</h3>
+<div class="meta">370 of 360000 pixels differ (0.103%), max channel delta 123 &mdash; allowance 8000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_normalmap_rendering/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_normalmap_rendering/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_normalmap_rendering/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_normalmap_rendering / frame_0010.png</h3>
+<div class="meta">529 of 360000 pixels differ (0.147%), max channel delta 123 &mdash; allowance 8000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_normalmap_rendering/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_normalmap_rendering/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_normalmap_rendering/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_normalmap_rendering / frame_0030.png</h3>
+<div class="meta">911 of 360000 pixels differ (0.253%), max channel delta 123 &mdash; allowance 8000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_normalmap_rendering/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_normalmap_rendering/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_normalmap_rendering/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_postprocessing / frame_0000.png</h3>
+<div class="meta">6 of 360000 pixels differ (0.002%), max channel delta 90 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_postprocessing/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_postprocessing/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_postprocessing/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_postprocessing / frame_0010.png</h3>
+<div class="meta">3 of 360000 pixels differ (0.001%), max channel delta 32 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_postprocessing/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_postprocessing/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_postprocessing/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_postprocessing / frame_0030.png</h3>
+<div class="meta">1 of 360000 pixels differ (0.000%), max channel delta 6 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_postprocessing/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_postprocessing/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_postprocessing/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_shadowmap_rendering / frame_0000.png</h3>
+<div class="meta">1243 of 360000 pixels differ (0.345%), max channel delta 89 &mdash; allowance 9000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_shadowmap_rendering/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_shadowmap_rendering/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_shadowmap_rendering/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_shadowmap_rendering / frame_0010.png</h3>
+<div class="meta">1411 of 360000 pixels differ (0.392%), max channel delta 114 &mdash; allowance 9000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_shadowmap_rendering/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_shadowmap_rendering/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_shadowmap_rendering/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_shadowmap_rendering / frame_0030.png</h3>
+<div class="meta">1809 of 360000 pixels differ (0.502%), max channel delta 79 &mdash; allowance 9000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_shadowmap_rendering/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_shadowmap_rendering/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_shadowmap_rendering/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_simple_mask / frame_0000.png</h3>
+<div class="meta">20 of 360000 pixels differ (0.006%), max channel delta 128 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_simple_mask/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_simple_mask/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_simple_mask/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_simple_mask / frame_0010.png</h3>
+<div class="meta">32 of 360000 pixels differ (0.009%), max channel delta 128 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_simple_mask/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_simple_mask/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_simple_mask/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shaders_simple_mask / frame_0030.png</h3>
+<div class="meta">40 of 360000 pixels differ (0.011%), max channel delta 128 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shaders_simple_mask/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shaders_simple_mask/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shaders_simple_mask/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_bouncing_ball / frame_0000.png</h3>
+<div class="meta">48 of 360000 pixels differ (0.013%), max channel delta 53 &mdash; allowance 300</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_bouncing_ball/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_bouncing_ball/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_bouncing_ball/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_bouncing_ball / frame_0010.png</h3>
+<div class="meta">48 of 360000 pixels differ (0.013%), max channel delta 53 &mdash; allowance 300</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_bouncing_ball/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_bouncing_ball/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_bouncing_ball/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_bouncing_ball / frame_0030.png</h3>
+<div class="meta">40 of 360000 pixels differ (0.011%), max channel delta 53 &mdash; allowance 300</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_bouncing_ball/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_bouncing_ball/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_bouncing_ball/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_bullet_hell / frame_0010.png</h3>
+<div class="meta">39 of 360000 pixels differ (0.011%), max channel delta 115 &mdash; allowance 500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_bullet_hell/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_bullet_hell/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_bullet_hell/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_bullet_hell / frame_0030.png</h3>
+<div class="meta">124 of 360000 pixels differ (0.034%), max channel delta 122 &mdash; allowance 500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_bullet_hell/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_bullet_hell/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_bullet_hell/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_circle_sector_drawing / frame_0000.png</h3>
+<div class="meta">718 of 360000 pixels differ (0.199%), max channel delta 127 &mdash; allowance 2200</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_circle_sector_drawing/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_circle_sector_drawing/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_circle_sector_drawing/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_circle_sector_drawing / frame_0010.png</h3>
+<div class="meta">718 of 360000 pixels differ (0.199%), max channel delta 127 &mdash; allowance 2200</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_circle_sector_drawing/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_circle_sector_drawing/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_circle_sector_drawing/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_circle_sector_drawing / frame_0030.png</h3>
+<div class="meta">718 of 360000 pixels differ (0.199%), max channel delta 127 &mdash; allowance 2200</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_circle_sector_drawing/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_circle_sector_drawing/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_circle_sector_drawing/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_double_pendulum / frame_0000.png</h3>
+<div class="meta">12898 of 1440000 pixels differ (0.896%), max channel delta 62 &mdash; allowance 40000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_double_pendulum/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_double_pendulum/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_double_pendulum/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_double_pendulum / frame_0010.png</h3>
+<div class="meta">12881 of 1440000 pixels differ (0.895%), max channel delta 53 &mdash; allowance 40000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_double_pendulum/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_double_pendulum/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_double_pendulum/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_double_pendulum / frame_0030.png</h3>
+<div class="meta">9127 of 1440000 pixels differ (0.634%), max channel delta 36 &mdash; allowance 40000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_double_pendulum/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_double_pendulum/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_double_pendulum/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_lines_bezier / frame_0000.png</h3>
+<div class="meta">491 of 360000 pixels differ (0.136%), max channel delta 62 &mdash; allowance 4000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_lines_bezier/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_lines_bezier/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_lines_bezier/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_lines_bezier / frame_0010.png</h3>
+<div class="meta">491 of 360000 pixels differ (0.136%), max channel delta 62 &mdash; allowance 4000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_lines_bezier/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_lines_bezier/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_lines_bezier/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_lines_bezier / frame_0030.png</h3>
+<div class="meta">491 of 360000 pixels differ (0.136%), max channel delta 62 &mdash; allowance 4000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_lines_bezier/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_lines_bezier/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_lines_bezier/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_math_angle_rotation / frame_0000.png</h3>
+<div class="meta">56 of 288000 pixels differ (0.019%), max channel delta 255 &mdash; allowance 200</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_math_angle_rotation/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_math_angle_rotation/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_math_angle_rotation/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_math_angle_rotation / frame_0010.png</h3>
+<div class="meta">8 of 288000 pixels differ (0.003%), max channel delta 255 &mdash; allowance 200</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_math_angle_rotation/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_math_angle_rotation/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_math_angle_rotation/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_math_angle_rotation / frame_0030.png</h3>
+<div class="meta">1 of 288000 pixels differ (0.000%), max channel delta 255 &mdash; allowance 200</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_math_angle_rotation/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_math_angle_rotation/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_math_angle_rotation/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_math_sine_cosine / frame_0000.png</h3>
+<div class="meta">1343 of 360000 pixels differ (0.373%), max channel delta 68 &mdash; allowance 14000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_math_sine_cosine/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_math_sine_cosine/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_math_sine_cosine/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_math_sine_cosine / frame_0010.png</h3>
+<div class="meta">1433 of 360000 pixels differ (0.398%), max channel delta 204 &mdash; allowance 14000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_math_sine_cosine/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_math_sine_cosine/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_math_sine_cosine/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_math_sine_cosine / frame_0030.png</h3>
+<div class="meta">1520 of 360000 pixels differ (0.422%), max channel delta 245 &mdash; allowance 14000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_math_sine_cosine/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_math_sine_cosine/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_math_sine_cosine/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_rlgl_color_wheel / frame_0000.png</h3>
+<div class="meta">272 of 360000 pixels differ (0.076%), max channel delta 64 &mdash; allowance 2500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_rlgl_color_wheel/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_rlgl_color_wheel/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_rlgl_color_wheel/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_rlgl_color_wheel / frame_0010.png</h3>
+<div class="meta">272 of 360000 pixels differ (0.076%), max channel delta 64 &mdash; allowance 2500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_rlgl_color_wheel/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_rlgl_color_wheel/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_rlgl_color_wheel/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_rlgl_color_wheel / frame_0030.png</h3>
+<div class="meta">272 of 360000 pixels differ (0.076%), max channel delta 64 &mdash; allowance 2500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_rlgl_color_wheel/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_rlgl_color_wheel/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_rlgl_color_wheel/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_rlgl_triangle / frame_0000.png</h3>
+<div class="meta">338 of 360000 pixels differ (0.094%), max channel delta 62 &mdash; allowance 1300</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_rlgl_triangle/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_rlgl_triangle/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_rlgl_triangle/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_rlgl_triangle / frame_0010.png</h3>
+<div class="meta">338 of 360000 pixels differ (0.094%), max channel delta 62 &mdash; allowance 1300</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_rlgl_triangle/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_rlgl_triangle/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_rlgl_triangle/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_rlgl_triangle / frame_0030.png</h3>
+<div class="meta">338 of 360000 pixels differ (0.094%), max channel delta 62 &mdash; allowance 1300</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_rlgl_triangle/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_rlgl_triangle/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_rlgl_triangle/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_splines_drawing / frame_0000.png</h3>
+<div class="meta">885 of 360000 pixels differ (0.246%), max channel delta 62 &mdash; allowance 6000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_splines_drawing/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_splines_drawing/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_splines_drawing/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_splines_drawing / frame_0010.png</h3>
+<div class="meta">885 of 360000 pixels differ (0.246%), max channel delta 62 &mdash; allowance 6000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_splines_drawing/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_splines_drawing/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_splines_drawing/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>shapes_splines_drawing / frame_0030.png</h3>
+<div class="meta">885 of 360000 pixels differ (0.246%), max channel delta 62 &mdash; allowance 6000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/shapes_splines_drawing/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/shapes_splines_drawing/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/shapes_splines_drawing/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>text_3d_drawing / frame_0000.png</h3>
+<div class="meta">6306 of 360000 pixels differ (1.752%), max channel delta 109 &mdash; allowance 31000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/text_3d_drawing/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/text_3d_drawing/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/text_3d_drawing/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>text_3d_drawing / frame_0010.png</h3>
+<div class="meta">7250 of 360000 pixels differ (2.014%), max channel delta 143 &mdash; allowance 31000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/text_3d_drawing/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/text_3d_drawing/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/text_3d_drawing/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>text_3d_drawing / frame_0030.png</h3>
+<div class="meta">9228 of 360000 pixels differ (2.563%), max channel delta 245 &mdash; allowance 31000</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/text_3d_drawing/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/text_3d_drawing/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/text_3d_drawing/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>text_font_spritefont / frame_0000.png</h3>
+<div class="meta">16 of 360000 pixels differ (0.004%), max channel delta 142 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/text_font_spritefont/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/text_font_spritefont/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/text_font_spritefont/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>text_font_spritefont / frame_0010.png</h3>
+<div class="meta">16 of 360000 pixels differ (0.004%), max channel delta 142 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/text_font_spritefont/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/text_font_spritefont/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/text_font_spritefont/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>text_font_spritefont / frame_0030.png</h3>
+<div class="meta">16 of 360000 pixels differ (0.004%), max channel delta 142 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/text_font_spritefont/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/text_font_spritefont/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/text_font_spritefont/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>textures_polygon_drawing / frame_0000.png</h3>
+<div class="meta">1 of 360000 pixels differ (0.000%), max channel delta 9 &mdash; allowance 50</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/textures_polygon_drawing/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/textures_polygon_drawing/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/textures_polygon_drawing/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>textures_sprite_stacking / frame_0010.png</h3>
+<div class="meta">18 of 360000 pixels differ (0.005%), max channel delta 153 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/textures_sprite_stacking/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/textures_sprite_stacking/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/textures_sprite_stacking/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>textures_sprite_stacking / frame_0030.png</h3>
+<div class="meta">2 of 360000 pixels differ (0.001%), max channel delta 74 &mdash; allowance 100</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/textures_sprite_stacking/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/textures_sprite_stacking/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/textures_sprite_stacking/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>textures_textured_curve / frame_0000.png</h3>
+<div class="meta">1725 of 360000 pixels differ (0.479%), max channel delta 62 &mdash; allowance 8500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/textures_textured_curve/frame_0000.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/textures_textured_curve/frame_0000.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/textures_textured_curve/frame_0000.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>textures_textured_curve / frame_0010.png</h3>
+<div class="meta">1725 of 360000 pixels differ (0.479%), max channel delta 62 &mdash; allowance 8500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/textures_textured_curve/frame_0010.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/textures_textured_curve/frame_0010.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/textures_textured_curve/frame_0010.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<div class="card">
+<h3>textures_textured_curve / frame_0030.png</h3>
+<div class="meta">1725 of 360000 pixels differ (0.479%), max channel delta 62 &mdash; allowance 8500</div>
+<div class="imgs">
+  <figure><img src="rlgl_baseline_macos/textures_textured_curve/frame_0030.png" loading="lazy"><figcaption>reference</figcaption></figure>
+  <figure><img src="rlvk_macos_moltenvk/textures_textured_curve/frame_0030.png" loading="lazy"><figcaption>candidate</figcaption></figure>
+  <figure><img src="diffs_rlvk_macos_moltenvk/textures_textured_curve/frame_0030.png" loading="lazy"><figcaption>diff (x8)</figcaption></figure>
+</div>
+</div>
+<details>
+<summary>Skipped &mdash; inherently non-deterministic (22)</summary>
+<div class="list">
+  <div class="excl">&#8856; audio_raw_stream / frame_0000.png</div>
+  <div class="excl">&#8856; audio_raw_stream / frame_0010.png</div>
+  <div class="excl">&#8856; audio_raw_stream / frame_0030.png</div>
+  <div class="excl">&#8856; audio_stream_callback / frame_0000.png</div>
+  <div class="excl">&#8856; audio_stream_callback / frame_0010.png</div>
+  <div class="excl">&#8856; audio_stream_callback / frame_0030.png</div>
+  <div class="excl">&#8856; core_custom_frame_control / frame_0000.png</div>
+  <div class="excl">&#8856; core_window_flags / frame_0000.png</div>
+  <div class="excl">&#8856; core_window_flags / frame_0010.png</div>
+  <div class="excl">&#8856; core_window_flags / frame_0030.png</div>
+  <div class="excl">&#8856; shaders_compute_ssbo / frame_0000.png</div>
+  <div class="excl">&#8856; shaders_compute_ssbo / frame_0010.png</div>
+  <div class="excl">&#8856; shaders_compute_ssbo / frame_0030.png</div>
+  <div class="excl">&#8856; shaders_rlgl_compute / frame_0000.png</div>
+  <div class="excl">&#8856; shaders_rlgl_compute / frame_0010.png</div>
+  <div class="excl">&#8856; shaders_rlgl_compute / frame_0030.png</div>
+  <div class="excl">&#8856; shapes_clock_of_clocks / frame_0000.png</div>
+  <div class="excl">&#8856; shapes_clock_of_clocks / frame_0010.png</div>
+  <div class="excl">&#8856; shapes_clock_of_clocks / frame_0030.png</div>
+  <div class="excl">&#8856; shapes_digital_clock / frame_0000.png</div>
+  <div class="excl">&#8856; shapes_digital_clock / frame_0010.png</div>
+  <div class="excl">&#8856; shapes_digital_clock / frame_0030.png</div>
+</div>
+</details>
+<details open>
+<summary>Matched scenes (457)</summary>
+<div class="list">
+  <div class="ok">&#10003; audio_mixed_processor / frame_0000.png</div>
+  <div class="ok">&#10003; audio_mixed_processor / frame_0010.png</div>
+  <div class="ok">&#10003; audio_music_stream / frame_0000.png</div>
+  <div class="ok">&#10003; audio_music_stream / frame_0010.png</div>
+  <div class="ok">&#10003; audio_sound_loading / frame_0000.png</div>
+  <div class="ok">&#10003; audio_sound_loading / frame_0010.png</div>
+  <div class="ok">&#10003; audio_sound_loading / frame_0030.png</div>
+  <div class="ok">&#10003; audio_sound_multi / frame_0000.png</div>
+  <div class="ok">&#10003; audio_sound_multi / frame_0010.png</div>
+  <div class="ok">&#10003; audio_sound_multi / frame_0030.png</div>
+  <div class="ok">&#10003; audio_sound_positioning / frame_0000.png</div>
+  <div class="ok">&#10003; audio_sound_positioning / frame_0010.png</div>
+  <div class="ok">&#10003; audio_sound_positioning / frame_0030.png</div>
+  <div class="ok">&#10003; audio_spectrum_visualizer / frame_0000.png</div>
+  <div class="ok">&#10003; audio_spectrum_visualizer / frame_0010.png</div>
+  <div class="ok">&#10003; audio_spectrum_visualizer / frame_0030.png</div>
+  <div class="ok">&#10003; audio_stream_effects / frame_0000.png</div>
+  <div class="ok">&#10003; audio_stream_effects / frame_0010.png</div>
+  <div class="ok">&#10003; core_2d_camera / frame_0000.png</div>
+  <div class="ok">&#10003; core_2d_camera / frame_0010.png</div>
+  <div class="ok">&#10003; core_2d_camera / frame_0030.png</div>
+  <div class="ok">&#10003; core_2d_camera_platformer / frame_0000.png</div>
+  <div class="ok">&#10003; core_2d_camera_platformer / frame_0010.png</div>
+  <div class="ok">&#10003; core_2d_camera_platformer / frame_0030.png</div>
+  <div class="ok">&#10003; core_2d_camera_split_screen / frame_0000.png</div>
+  <div class="ok">&#10003; core_2d_camera_split_screen / frame_0010.png</div>
+  <div class="ok">&#10003; core_2d_camera_split_screen / frame_0030.png</div>
+  <div class="ok">&#10003; core_3d_camera_free / frame_0000.png</div>
+  <div class="ok">&#10003; core_3d_camera_free / frame_0010.png</div>
+  <div class="ok">&#10003; core_3d_camera_free / frame_0030.png</div>
+  <div class="ok">&#10003; core_3d_camera_mode / frame_0000.png</div>
+  <div class="ok">&#10003; core_3d_camera_mode / frame_0010.png</div>
+  <div class="ok">&#10003; core_3d_camera_mode / frame_0030.png</div>
+  <div class="ok">&#10003; core_3d_camera_split_screen / frame_0000.png</div>
+  <div class="ok">&#10003; core_3d_camera_split_screen / frame_0010.png</div>
+  <div class="ok">&#10003; core_3d_camera_split_screen / frame_0030.png</div>
+  <div class="ok">&#10003; core_3d_picking / frame_0000.png</div>
+  <div class="ok">&#10003; core_3d_picking / frame_0010.png</div>
+  <div class="ok">&#10003; core_3d_picking / frame_0030.png</div>
+  <div class="ok">&#10003; core_automation_events / frame_0000.png</div>
+  <div class="ok">&#10003; core_automation_events / frame_0010.png</div>
+  <div class="ok">&#10003; core_automation_events / frame_0030.png</div>
+  <div class="ok">&#10003; core_basic_screen_manager / frame_0000.png</div>
+  <div class="ok">&#10003; core_basic_screen_manager / frame_0010.png</div>
+  <div class="ok">&#10003; core_basic_screen_manager / frame_0030.png</div>
+  <div class="ok">&#10003; core_basic_window / frame_0000.png</div>
+  <div class="ok">&#10003; core_basic_window / frame_0010.png</div>
+  <div class="ok">&#10003; core_basic_window / frame_0030.png</div>
+  <div class="ok">&#10003; core_clipboard_text / frame_0000.png</div>
+  <div class="ok">&#10003; core_clipboard_text / frame_0010.png</div>
+  <div class="ok">&#10003; core_clipboard_text / frame_0030.png</div>
+  <div class="ok">&#10003; core_compute_hash / frame_0000.png</div>
+  <div class="ok">&#10003; core_compute_hash / frame_0010.png</div>
+  <div class="ok">&#10003; core_compute_hash / frame_0030.png</div>
+  <div class="ok">&#10003; core_custom_logging / frame_0000.png</div>
+  <div class="ok">&#10003; core_custom_logging / frame_0010.png</div>
+  <div class="ok">&#10003; core_custom_logging / frame_0030.png</div>
+  <div class="ok">&#10003; core_delta_time / frame_0000.png</div>
+  <div class="ok">&#10003; core_delta_time / frame_0010.png</div>
+  <div class="ok">&#10003; core_delta_time / frame_0030.png</div>
+  <div class="ok">&#10003; core_directory_files / frame_0000.png</div>
+  <div class="ok">&#10003; core_directory_files / frame_0010.png</div>
+  <div class="ok">&#10003; core_directory_files / frame_0030.png</div>
+  <div class="ok">&#10003; core_drop_files / frame_0000.png</div>
+  <div class="ok">&#10003; core_drop_files / frame_0010.png</div>
+  <div class="ok">&#10003; core_drop_files / frame_0030.png</div>
+  <div class="ok">&#10003; core_highdpi_demo / frame_0000.png</div>
+  <div class="ok">&#10003; core_highdpi_demo / frame_0010.png</div>
+  <div class="ok">&#10003; core_highdpi_demo / frame_0030.png</div>
+  <div class="ok">&#10003; core_input_actions / frame_0000.png</div>
+  <div class="ok">&#10003; core_input_actions / frame_0010.png</div>
+  <div class="ok">&#10003; core_input_actions / frame_0030.png</div>
+  <div class="ok">&#10003; core_input_gamepad / frame_0000.png</div>
+  <div class="ok">&#10003; core_input_gamepad / frame_0010.png</div>
+  <div class="ok">&#10003; core_input_gamepad / frame_0030.png</div>
+  <div class="ok">&#10003; core_input_gestures / frame_0000.png</div>
+  <div class="ok">&#10003; core_input_gestures / frame_0010.png</div>
+  <div class="ok">&#10003; core_input_gestures / frame_0030.png</div>
+  <div class="ok">&#10003; core_input_keys / frame_0000.png</div>
+  <div class="ok">&#10003; core_input_keys / frame_0010.png</div>
+  <div class="ok">&#10003; core_input_keys / frame_0030.png</div>
+  <div class="ok">&#10003; core_input_mouse / frame_0000.png</div>
+  <div class="ok">&#10003; core_input_mouse / frame_0010.png</div>
+  <div class="ok">&#10003; core_input_mouse / frame_0030.png</div>
+  <div class="ok">&#10003; core_input_mouse_wheel / frame_0000.png</div>
+  <div class="ok">&#10003; core_input_mouse_wheel / frame_0010.png</div>
+  <div class="ok">&#10003; core_input_mouse_wheel / frame_0030.png</div>
+  <div class="ok">&#10003; core_input_multitouch / frame_0000.png</div>
+  <div class="ok">&#10003; core_input_multitouch / frame_0010.png</div>
+  <div class="ok">&#10003; core_input_multitouch / frame_0030.png</div>
+  <div class="ok">&#10003; core_input_virtual_controls / frame_0000.png</div>
+  <div class="ok">&#10003; core_input_virtual_controls / frame_0010.png</div>
+  <div class="ok">&#10003; core_input_virtual_controls / frame_0030.png</div>
+  <div class="ok">&#10003; core_keyboard_testbed / frame_0000.png</div>
+  <div class="ok">&#10003; core_keyboard_testbed / frame_0010.png</div>
+  <div class="ok">&#10003; core_keyboard_testbed / frame_0030.png</div>
+  <div class="ok">&#10003; core_monitor_detector / frame_0000.png</div>
+  <div class="ok">&#10003; core_monitor_detector / frame_0010.png</div>
+  <div class="ok">&#10003; core_monitor_detector / frame_0030.png</div>
+  <div class="ok">&#10003; core_random_values / frame_0000.png</div>
+  <div class="ok">&#10003; core_random_values / frame_0010.png</div>
+  <div class="ok">&#10003; core_random_values / frame_0030.png</div>
+  <div class="ok">&#10003; core_render_texture / frame_0000.png</div>
+  <div class="ok">&#10003; core_render_texture / frame_0010.png</div>
+  <div class="ok">&#10003; core_render_texture / frame_0030.png</div>
+  <div class="ok">&#10003; core_scissor_test / frame_0000.png</div>
+  <div class="ok">&#10003; core_scissor_test / frame_0010.png</div>
+  <div class="ok">&#10003; core_scissor_test / frame_0030.png</div>
+  <div class="ok">&#10003; core_screen_recording / frame_0000.png</div>
+  <div class="ok">&#10003; core_screen_recording / frame_0010.png</div>
+  <div class="ok">&#10003; core_screen_recording / frame_0030.png</div>
+  <div class="ok">&#10003; core_smooth_pixelperfect / frame_0000.png</div>
+  <div class="ok">&#10003; core_smooth_pixelperfect / frame_0010.png</div>
+  <div class="ok">&#10003; core_smooth_pixelperfect / frame_0030.png</div>
+  <div class="ok">&#10003; core_storage_values / frame_0000.png</div>
+  <div class="ok">&#10003; core_storage_values / frame_0010.png</div>
+  <div class="ok">&#10003; core_storage_values / frame_0030.png</div>
+  <div class="ok">&#10003; core_text_file_loading / frame_0000.png</div>
+  <div class="ok">&#10003; core_text_file_loading / frame_0010.png</div>
+  <div class="ok">&#10003; core_text_file_loading / frame_0030.png</div>
+  <div class="ok">&#10003; core_viewport_scaling / frame_0000.png</div>
+  <div class="ok">&#10003; core_viewport_scaling / frame_0010.png</div>
+  <div class="ok">&#10003; core_viewport_scaling / frame_0030.png</div>
+  <div class="ok">&#10003; core_window_letterbox / frame_0000.png</div>
+  <div class="ok">&#10003; core_window_letterbox / frame_0010.png</div>
+  <div class="ok">&#10003; core_window_letterbox / frame_0030.png</div>
+  <div class="ok">&#10003; core_window_should_close / frame_0000.png</div>
+  <div class="ok">&#10003; core_window_should_close / frame_0010.png</div>
+  <div class="ok">&#10003; core_window_should_close / frame_0030.png</div>
+  <div class="ok">&#10003; core_window_web / frame_0000.png</div>
+  <div class="ok">&#10003; core_window_web / frame_0010.png</div>
+  <div class="ok">&#10003; core_window_web / frame_0030.png</div>
+  <div class="ok">&#10003; core_world_screen / frame_0000.png</div>
+  <div class="ok">&#10003; core_world_screen / frame_0010.png</div>
+  <div class="ok">&#10003; core_world_screen / frame_0030.png</div>
+  <div class="ok">&#10003; models_animation_blend_custom / frame_0000.png</div>
+  <div class="ok">&#10003; models_animation_blend_custom / frame_0010.png</div>
+  <div class="ok">&#10003; models_animation_blend_custom / frame_0030.png</div>
+  <div class="ok">&#10003; models_animation_blending / frame_0000.png</div>
+  <div class="ok">&#10003; models_animation_blending / frame_0010.png</div>
+  <div class="ok">&#10003; models_animation_blending / frame_0030.png</div>
+  <div class="ok">&#10003; models_animation_gpu_skinning / frame_0000.png</div>
+  <div class="ok">&#10003; models_animation_gpu_skinning / frame_0010.png</div>
+  <div class="ok">&#10003; models_animation_gpu_skinning / frame_0030.png</div>
+  <div class="ok">&#10003; models_animation_timing / frame_0000.png</div>
+  <div class="ok">&#10003; models_animation_timing / frame_0010.png</div>
+  <div class="ok">&#10003; models_animation_timing / frame_0030.png</div>
+  <div class="ok">&#10003; models_billboard_rendering / frame_0000.png</div>
+  <div class="ok">&#10003; models_billboard_rendering / frame_0010.png</div>
+  <div class="ok">&#10003; models_billboard_rendering / frame_0030.png</div>
+  <div class="ok">&#10003; models_bone_socket / frame_0000.png</div>
+  <div class="ok">&#10003; models_bone_socket / frame_0010.png</div>
+  <div class="ok">&#10003; models_bone_socket / frame_0030.png</div>
+  <div class="ok">&#10003; models_directional_billboard / frame_0000.png</div>
+  <div class="ok">&#10003; models_directional_billboard / frame_0010.png</div>
+  <div class="ok">&#10003; models_directional_billboard / frame_0030.png</div>
+  <div class="ok">&#10003; models_heightmap_rendering / frame_0000.png</div>
+  <div class="ok">&#10003; models_heightmap_rendering / frame_0010.png</div>
+  <div class="ok">&#10003; models_loading_gltf / frame_0000.png</div>
+  <div class="ok">&#10003; models_loading_gltf / frame_0010.png</div>
+  <div class="ok">&#10003; models_loading_gltf / frame_0030.png</div>
+  <div class="ok">&#10003; models_loading_iqm / frame_0000.png</div>
+  <div class="ok">&#10003; models_loading_iqm / frame_0030.png</div>
+  <div class="ok">&#10003; models_loading_m3d / frame_0000.png</div>
+  <div class="ok">&#10003; models_loading_m3d / frame_0010.png</div>
+  <div class="ok">&#10003; models_loading_m3d / frame_0030.png</div>
+  <div class="ok">&#10003; models_loading_vox / frame_0000.png</div>
+  <div class="ok">&#10003; models_loading_vox / frame_0010.png</div>
+  <div class="ok">&#10003; models_loading_vox / frame_0030.png</div>
+  <div class="ok">&#10003; models_mesh_generation / frame_0000.png</div>
+  <div class="ok">&#10003; models_mesh_generation / frame_0010.png</div>
+  <div class="ok">&#10003; models_rlgl_solar_system / frame_0000.png</div>
+  <div class="ok">&#10003; models_rlgl_solar_system / frame_0010.png</div>
+  <div class="ok">&#10003; models_rlgl_solar_system / frame_0030.png</div>
+  <div class="ok">&#10003; models_rotating_cube / frame_0000.png</div>
+  <div class="ok">&#10003; models_rotating_cube / frame_0010.png</div>
+  <div class="ok">&#10003; models_skybox_rendering / frame_0000.png</div>
+  <div class="ok">&#10003; models_skybox_rendering / frame_0010.png</div>
+  <div class="ok">&#10003; models_skybox_rendering / frame_0030.png</div>
+  <div class="ok">&#10003; models_tesseract_view / frame_0000.png</div>
+  <div class="ok">&#10003; models_tesseract_view / frame_0010.png</div>
+  <div class="ok">&#10003; models_tesseract_view / frame_0030.png</div>
+  <div class="ok">&#10003; models_textured_cube / frame_0000.png</div>
+  <div class="ok">&#10003; models_textured_cube / frame_0010.png</div>
+  <div class="ok">&#10003; models_textured_cube / frame_0030.png</div>
+  <div class="ok">&#10003; models_waving_cubes / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_ascii_rendering / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_ascii_rendering / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_ascii_rendering / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_color_correction / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_color_correction / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_color_correction / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_deferred_rendering / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_deferred_rendering / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_deferred_rendering / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_depth_rendering / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_depth_rendering / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_depth_rendering / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_depth_writing / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_depth_writing / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_depth_writing / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_game_of_life / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_game_of_life / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_game_of_life / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_hot_reloading / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_hot_reloading / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_hot_reloading / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_multi_sample2d / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_multi_sample2d / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_multi_sample2d / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_palette_switch / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_palette_switch / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_palette_switch / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_raymarching_rendering / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_raymarching_rendering / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_raymarching_rendering / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_rounded_rectangle / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_rounded_rectangle / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_rounded_rectangle / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_shapes_textures / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_shapes_textures / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_shapes_textures / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_spotlight_rendering / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_spotlight_rendering / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_spotlight_rendering / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_texture_outline / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_texture_outline / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_texture_outline / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_texture_rendering / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_texture_rendering / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_texture_rendering / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_texture_tiling / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_texture_tiling / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_texture_tiling / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_texture_waves / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_texture_waves / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_texture_waves / frame_0030.png</div>
+  <div class="ok">&#10003; shaders_vertex_displacement / frame_0000.png</div>
+  <div class="ok">&#10003; shaders_vertex_displacement / frame_0010.png</div>
+  <div class="ok">&#10003; shaders_vertex_displacement / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_ball_physics / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_ball_physics / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_ball_physics / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_basic_shapes / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_basic_shapes / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_basic_shapes / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_bullet_hell / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_collision_area / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_collision_area / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_collision_area / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_colors_palette / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_colors_palette / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_colors_palette / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_dashed_line / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_dashed_line / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_dashed_line / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_easings_ball / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_easings_ball / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_easings_ball / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_easings_box / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_easings_box / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_easings_box / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_easings_rectangles / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_easings_rectangles / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_easings_rectangles / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_easings_testbed / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_easings_testbed / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_easings_testbed / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_following_eyes / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_following_eyes / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_following_eyes / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_hilbert_curve / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_hilbert_curve / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_hilbert_curve / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_kaleidoscope / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_kaleidoscope / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_kaleidoscope / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_lines_drawing / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_lines_drawing / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_lines_drawing / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_logo_raylib / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_logo_raylib / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_logo_raylib / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_logo_raylib_anim / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_logo_raylib_anim / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_logo_raylib_anim / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_mouse_trail / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_mouse_trail / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_mouse_trail / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_penrose_tile / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_penrose_tile / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_penrose_tile / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_pie_chart / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_pie_chart / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_pie_chart / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_rectangle_advanced / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_rectangle_advanced / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_rectangle_advanced / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_rectangle_scaling / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_rectangle_scaling / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_rectangle_scaling / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_recursive_tree / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_recursive_tree / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_recursive_tree / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_ring_drawing / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_ring_drawing / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_ring_drawing / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_rounded_rectangle_drawing / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_rounded_rectangle_drawing / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_rounded_rectangle_drawing / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_simple_particles / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_simple_particles / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_simple_particles / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_starfield_effect / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_starfield_effect / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_starfield_effect / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_top_down_lights / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_top_down_lights / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_top_down_lights / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_triangle_strip / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_triangle_strip / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_triangle_strip / frame_0030.png</div>
+  <div class="ok">&#10003; shapes_vector_angle / frame_0000.png</div>
+  <div class="ok">&#10003; shapes_vector_angle / frame_0010.png</div>
+  <div class="ok">&#10003; shapes_vector_angle / frame_0030.png</div>
+  <div class="ok">&#10003; text_codepoints_loading / frame_0000.png</div>
+  <div class="ok">&#10003; text_codepoints_loading / frame_0010.png</div>
+  <div class="ok">&#10003; text_codepoints_loading / frame_0030.png</div>
+  <div class="ok">&#10003; text_font_filters / frame_0000.png</div>
+  <div class="ok">&#10003; text_font_filters / frame_0010.png</div>
+  <div class="ok">&#10003; text_font_filters / frame_0030.png</div>
+  <div class="ok">&#10003; text_font_loading / frame_0000.png</div>
+  <div class="ok">&#10003; text_font_loading / frame_0010.png</div>
+  <div class="ok">&#10003; text_font_loading / frame_0030.png</div>
+  <div class="ok">&#10003; text_font_sdf / frame_0000.png</div>
+  <div class="ok">&#10003; text_font_sdf / frame_0010.png</div>
+  <div class="ok">&#10003; text_font_sdf / frame_0030.png</div>
+  <div class="ok">&#10003; text_format_text / frame_0000.png</div>
+  <div class="ok">&#10003; text_format_text / frame_0010.png</div>
+  <div class="ok">&#10003; text_format_text / frame_0030.png</div>
+  <div class="ok">&#10003; text_inline_styling / frame_0000.png</div>
+  <div class="ok">&#10003; text_inline_styling / frame_0010.png</div>
+  <div class="ok">&#10003; text_inline_styling / frame_0030.png</div>
+  <div class="ok">&#10003; text_input_box / frame_0000.png</div>
+  <div class="ok">&#10003; text_input_box / frame_0010.png</div>
+  <div class="ok">&#10003; text_input_box / frame_0030.png</div>
+  <div class="ok">&#10003; text_rectangle_bounds / frame_0000.png</div>
+  <div class="ok">&#10003; text_rectangle_bounds / frame_0010.png</div>
+  <div class="ok">&#10003; text_rectangle_bounds / frame_0030.png</div>
+  <div class="ok">&#10003; text_sprite_fonts / frame_0000.png</div>
+  <div class="ok">&#10003; text_sprite_fonts / frame_0010.png</div>
+  <div class="ok">&#10003; text_sprite_fonts / frame_0030.png</div>
+  <div class="ok">&#10003; text_strings_management / frame_0000.png</div>
+  <div class="ok">&#10003; text_strings_management / frame_0010.png</div>
+  <div class="ok">&#10003; text_strings_management / frame_0030.png</div>
+  <div class="ok">&#10003; text_unicode_emojis / frame_0000.png</div>
+  <div class="ok">&#10003; text_unicode_emojis / frame_0010.png</div>
+  <div class="ok">&#10003; text_unicode_emojis / frame_0030.png</div>
+  <div class="ok">&#10003; text_unicode_ranges / frame_0000.png</div>
+  <div class="ok">&#10003; text_unicode_ranges / frame_0010.png</div>
+  <div class="ok">&#10003; text_unicode_ranges / frame_0030.png</div>
+  <div class="ok">&#10003; text_words_alignment / frame_0000.png</div>
+  <div class="ok">&#10003; text_words_alignment / frame_0010.png</div>
+  <div class="ok">&#10003; text_words_alignment / frame_0030.png</div>
+  <div class="ok">&#10003; text_writing_anim / frame_0000.png</div>
+  <div class="ok">&#10003; text_writing_anim / frame_0010.png</div>
+  <div class="ok">&#10003; text_writing_anim / frame_0030.png</div>
+  <div class="ok">&#10003; textures_background_scrolling / frame_0000.png</div>
+  <div class="ok">&#10003; textures_background_scrolling / frame_0010.png</div>
+  <div class="ok">&#10003; textures_background_scrolling / frame_0030.png</div>
+  <div class="ok">&#10003; textures_blend_modes / frame_0000.png</div>
+  <div class="ok">&#10003; textures_blend_modes / frame_0010.png</div>
+  <div class="ok">&#10003; textures_blend_modes / frame_0030.png</div>
+  <div class="ok">&#10003; textures_bunnymark / frame_0000.png</div>
+  <div class="ok">&#10003; textures_bunnymark / frame_0010.png</div>
+  <div class="ok">&#10003; textures_bunnymark / frame_0030.png</div>
+  <div class="ok">&#10003; textures_cellular_automata / frame_0000.png</div>
+  <div class="ok">&#10003; textures_cellular_automata / frame_0010.png</div>
+  <div class="ok">&#10003; textures_cellular_automata / frame_0030.png</div>
+  <div class="ok">&#10003; textures_clipboard_image / frame_0000.png</div>
+  <div class="ok">&#10003; textures_clipboard_image / frame_0010.png</div>
+  <div class="ok">&#10003; textures_clipboard_image / frame_0030.png</div>
+  <div class="ok">&#10003; textures_fog_of_war / frame_0000.png</div>
+  <div class="ok">&#10003; textures_fog_of_war / frame_0010.png</div>
+  <div class="ok">&#10003; textures_fog_of_war / frame_0030.png</div>
+  <div class="ok">&#10003; textures_framebuffer_rendering / frame_0000.png</div>
+  <div class="ok">&#10003; textures_framebuffer_rendering / frame_0010.png</div>
+  <div class="ok">&#10003; textures_framebuffer_rendering / frame_0030.png</div>
+  <div class="ok">&#10003; textures_gif_player / frame_0000.png</div>
+  <div class="ok">&#10003; textures_gif_player / frame_0010.png</div>
+  <div class="ok">&#10003; textures_gif_player / frame_0030.png</div>
+  <div class="ok">&#10003; textures_image_channel / frame_0000.png</div>
+  <div class="ok">&#10003; textures_image_channel / frame_0010.png</div>
+  <div class="ok">&#10003; textures_image_channel / frame_0030.png</div>
+  <div class="ok">&#10003; textures_image_drawing / frame_0000.png</div>
+  <div class="ok">&#10003; textures_image_drawing / frame_0010.png</div>
+  <div class="ok">&#10003; textures_image_drawing / frame_0030.png</div>
+  <div class="ok">&#10003; textures_image_generation / frame_0000.png</div>
+  <div class="ok">&#10003; textures_image_generation / frame_0010.png</div>
+  <div class="ok">&#10003; textures_image_generation / frame_0030.png</div>
+  <div class="ok">&#10003; textures_image_kernel / frame_0000.png</div>
+  <div class="ok">&#10003; textures_image_kernel / frame_0010.png</div>
+  <div class="ok">&#10003; textures_image_kernel / frame_0030.png</div>
+  <div class="ok">&#10003; textures_image_loading / frame_0000.png</div>
+  <div class="ok">&#10003; textures_image_loading / frame_0010.png</div>
+  <div class="ok">&#10003; textures_image_loading / frame_0030.png</div>
+  <div class="ok">&#10003; textures_image_processing / frame_0000.png</div>
+  <div class="ok">&#10003; textures_image_processing / frame_0010.png</div>
+  <div class="ok">&#10003; textures_image_processing / frame_0030.png</div>
+  <div class="ok">&#10003; textures_image_rotate / frame_0000.png</div>
+  <div class="ok">&#10003; textures_image_rotate / frame_0010.png</div>
+  <div class="ok">&#10003; textures_image_rotate / frame_0030.png</div>
+  <div class="ok">&#10003; textures_image_text / frame_0000.png</div>
+  <div class="ok">&#10003; textures_image_text / frame_0010.png</div>
+  <div class="ok">&#10003; textures_image_text / frame_0030.png</div>
+  <div class="ok">&#10003; textures_logo_raylib / frame_0000.png</div>
+  <div class="ok">&#10003; textures_logo_raylib / frame_0010.png</div>
+  <div class="ok">&#10003; textures_logo_raylib / frame_0030.png</div>
+  <div class="ok">&#10003; textures_magnifying_glass / frame_0000.png</div>
+  <div class="ok">&#10003; textures_magnifying_glass / frame_0010.png</div>
+  <div class="ok">&#10003; textures_magnifying_glass / frame_0030.png</div>
+  <div class="ok">&#10003; textures_mouse_painting / frame_0000.png</div>
+  <div class="ok">&#10003; textures_mouse_painting / frame_0010.png</div>
+  <div class="ok">&#10003; textures_mouse_painting / frame_0030.png</div>
+  <div class="ok">&#10003; textures_npatch_drawing / frame_0000.png</div>
+  <div class="ok">&#10003; textures_npatch_drawing / frame_0010.png</div>
+  <div class="ok">&#10003; textures_npatch_drawing / frame_0030.png</div>
+  <div class="ok">&#10003; textures_particles_blending / frame_0000.png</div>
+  <div class="ok">&#10003; textures_particles_blending / frame_0010.png</div>
+  <div class="ok">&#10003; textures_particles_blending / frame_0030.png</div>
+  <div class="ok">&#10003; textures_polygon_drawing / frame_0010.png</div>
+  <div class="ok">&#10003; textures_polygon_drawing / frame_0030.png</div>
+  <div class="ok">&#10003; textures_raw_data / frame_0000.png</div>
+  <div class="ok">&#10003; textures_raw_data / frame_0010.png</div>
+  <div class="ok">&#10003; textures_raw_data / frame_0030.png</div>
+  <div class="ok">&#10003; textures_screen_buffer / frame_0000.png</div>
+  <div class="ok">&#10003; textures_screen_buffer / frame_0010.png</div>
+  <div class="ok">&#10003; textures_screen_buffer / frame_0030.png</div>
+  <div class="ok">&#10003; textures_sprite_animation / frame_0000.png</div>
+  <div class="ok">&#10003; textures_sprite_animation / frame_0010.png</div>
+  <div class="ok">&#10003; textures_sprite_animation / frame_0030.png</div>
+  <div class="ok">&#10003; textures_sprite_button / frame_0000.png</div>
+  <div class="ok">&#10003; textures_sprite_button / frame_0010.png</div>
+  <div class="ok">&#10003; textures_sprite_button / frame_0030.png</div>
+  <div class="ok">&#10003; textures_sprite_explosion / frame_0000.png</div>
+  <div class="ok">&#10003; textures_sprite_explosion / frame_0010.png</div>
+  <div class="ok">&#10003; textures_sprite_explosion / frame_0030.png</div>
+  <div class="ok">&#10003; textures_sprite_stacking / frame_0000.png</div>
+  <div class="ok">&#10003; textures_srcrec_dstrec / frame_0000.png</div>
+  <div class="ok">&#10003; textures_srcrec_dstrec / frame_0010.png</div>
+  <div class="ok">&#10003; textures_srcrec_dstrec / frame_0030.png</div>
+  <div class="ok">&#10003; textures_tiled_drawing / frame_0000.png</div>
+  <div class="ok">&#10003; textures_tiled_drawing / frame_0010.png</div>
+  <div class="ok">&#10003; textures_tiled_drawing / frame_0030.png</div>
+  <div class="ok">&#10003; textures_to_image / frame_0000.png</div>
+  <div class="ok">&#10003; textures_to_image / frame_0010.png</div>
+  <div class="ok">&#10003; textures_to_image / frame_0030.png</div>
+</div>
+</details>
+</body>
+</html>

@@ -1,0 +1,6 @@
+raylib_version                         "6.1-dev"                        # raylib version used to render
+machine                                "Ryans-MacBook-Air.local"        # host machine name
+os                                     "macOS"                          # operating system
+gpu                                    "Apple M5"                       # graphics card (GL_RENDERER)
+gpu_vendor                             "Apple"                          # graphics vendor (GL_VENDOR)
+graphics_driver                        "4.1 Metal - 90.5"               # GL_VERSION string (includes driver)
