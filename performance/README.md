@@ -148,9 +148,12 @@ Mesa-compiled override (right).
 Vulkan ICD, so the label stays `macos_apple`). The `performance_rlmtl_{slang,msl,angle,naga,mesa}.ini`
 variants are the **shader-translation ladder** for the fragment-ALU mandelbulb
 (`performance_stress_test_direct`), where SPIRV-Cross's flattened-SSA MSL defeats Metal's
-optimizer: each variant re-captures the same build with `RLMTL_MSL_OVERRIDE=shader_overrides/<name>`
-injecting one precompiled fragment shader (keyed by SPIR-V FNV hash; every other scene runs
-the stock GLSL→shaderc→SPIRV-Cross path). Sources sit beside each compiled override.
+optimizer: each variant re-captures the same build with `RLMTL_MSL_OVERRIDE=<ABSOLUTE
+path to>/shader_overrides/<name>` injecting one precompiled fragment shader (keyed by
+SPIR-V FNV hash; every other scene runs the stock GLSL→shaderc→SPIRV-Cross path). The
+path MUST be absolute: `performance_capture` chdirs into each example's directory, and a
+relative path silently loads nothing (the run then measures the stock path - check the
+scene log for "injected override MSL"). Sources sit beside each compiled override.
 The winner is `mesa`: `raylib/tools/nir2msl` drives Mesa's `kosmicomp` (the KosmicKrisp
 NIR→MSL compiler, MIT) offline with KK's loop-guard/NaN-preserve workarounds disabled —
 it beats Apple's GL compiler 15–23% per 60 s ABBA-interleaved pair (~174 vs ~214 ms), the
