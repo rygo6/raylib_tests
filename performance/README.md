@@ -156,9 +156,12 @@ relative path silently loads nothing (the run then measures the stock path - che
 scene log for "injected override MSL"). Sources sit beside each compiled override.
 The winner is `mesa`: `raylib/tools/nir2msl` drives Mesa's `kosmicomp` (the KosmicKrisp
 NIR→MSL compiler, MIT) offline with KK's loop-guard/NaN-preserve workarounds disabled —
-it beats Apple's GL compiler 15–23% per 60 s ABBA-interleaved pair (~174 vs ~214 ms), the
-only automatic translation to do so (hand MSL 245, ANGLE 257, Slang 258, naga 285,
-SPIRV-Cross 382). Committed reports: `report_comparison_macos_gl_mtlmesa.html` (rlgl vs
+the only automatic translation that matches or beats Apple's GL compiler: 15–23% ahead
+per 60 s ABBA-interleaved pair on a rested machine (~174 vs ~214 ms, 2026-08-13), parity
+after hours of sustained load (ABBA 213/234 vs 223/224; symmetric cooled captures 224.3
+vs 225.1, 2026-08-18 — the machine's load state moves the pair between those poles), and
+ahead of the rest of the ladder in every session (2026-08-18 cooled: hand MSL 250, Slang
+268, ANGLE 279, naga 311, SPIRV-Cross 406; rested 2026-08-13: 245/258/257/285/382). Committed reports: `report_comparison_macos_gl_mtlmesa.html` (rlgl vs
 `rlmtl_mesa`, the shipping configuration, with a callout naming the Mesa compiler and a
 per-row speedup column — two-backend comparisons always get one),
 `report_comparison_macos_gl_mtl_mtlslang_mtlmsl_mtlangle_mtlnaga_mtlmesa.html` (all seven columns), and

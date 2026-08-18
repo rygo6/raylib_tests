@@ -418,7 +418,11 @@ static void ComparisonTable(FILE *f, BackendStats *bk, int nb, const char *title
 
 // Mesa NIR->MSL override callout: emitted whenever an rlmtl_* variant column carries the
 // precompiled-shader override set, so the reader knows which translation produced the
-// mandelbulb row. Evidence measured 2026-08-13 (Apple M5, 60s ABBA interleave).
+// mandelbulb row. Evidence measured 2026-08-13 (Apple M5, 60s ABBA interleave, rested
+// machine: mesa 174 vs GL 214, +15-23% every pair); re-verified 2026-08-18 after hours of
+// sustained load: parity (ABBA mesa 213/234 vs GL 223/224; symmetric cooled captures
+// 224.3 vs 225.1). Machine load state moves the pair between those poles; ladder order
+// among translations is stable.
 static void WriteMesaOverrideCallout(FILE *f)
 {
     fprintf(f, "<div class=callout><b>rlmtl_mesa = the native Metal backend + Mesa's shader compiler.</b> "
@@ -426,9 +430,10 @@ static void WriteMesaOverrideCallout(FILE *f)
         "scene except <code>performance_stress_test_direct</code>, whose fragment shader is precompiled offline "
         "by <code>raylib/tools/nir2msl</code> through <b>Mesa's NIR&rarr;MSL compiler</b> (the KosmicKrisp backend's "
         "<code>kosmicomp</code>, MIT) and injected via <code>RLMTL_MSL_OVERRIDE</code>. On that scene SPIRV-Cross's "
-        "flattened-SSA output defeats Metal's optimizer (382 ms); Mesa's NIR pipeline emits MSL that beats Apple's "
-        "own GL compiler &mdash; ~174 vs ~214 ms, winning every 60&#8201;s ABBA-interleaved pair by 15&ndash;23%% &mdash; "
-        "the only automatic GLSL translation measured to do so (hand-written MSL: 245; ANGLE 257; Slang 258; naga 285). "
+        "flattened-SSA output defeats Metal's optimizer; Mesa's NIR pipeline is the only automatic GLSL translation "
+        "that matches or beats Apple's own GL compiler &mdash; +15&ndash;23%% on a rested machine (60&#8201;s ABBA, "
+        "174 vs 214 ms, 2026-08-13), parity under sustained load (224 vs 225 ms, 2026-08-18) &mdash; ahead of "
+        "hand-written MSL, ANGLE, Slang and naga in every session. "
         "Pixel drift vs SPIRV-Cross is ULP-class only (84%% of differing channels off by 1, max 17/255; Mesa lowers "
         "sin/cos to conformant polynomials).</div>");
 }
