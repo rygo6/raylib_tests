@@ -156,12 +156,11 @@ relative path silently loads nothing (the run then measures the stock path - che
 scene log for "injected override MSL"). Sources sit beside each compiled override.
 The winner is `mesa`: `raylib/tools/nir2msl` drives Mesa's `kosmicomp` (the KosmicKrisp
 NIR→MSL compiler, MIT) offline with KK's loop-guard/NaN-preserve workarounds disabled —
-the only automatic translation that matches or beats Apple's GL compiler: 15–23% ahead
-per 60 s ABBA-interleaved pair on a rested machine (~174 vs ~214 ms, 2026-08-13), parity
-after hours of sustained load (ABBA 213/234 vs 223/224; symmetric cooled captures 224.3
-vs 225.1, 2026-08-18 — the machine's load state moves the pair between those poles), and
-ahead of the rest of the ladder in every session (2026-08-18 cooled: hand MSL 250, Slang
-268, ANGLE 279, naga 311, SPIRV-Cross 406; rested 2026-08-13: 245/258/257/285/382). Committed reports: `report_comparison_macos_gl_mtlmesa.html` (rlgl vs
+the only automatic translation measured faster than Apple's GL compiler. Definitive
+numbers from the 10-cycle interleaved protocol (below, 2026-08-18): mesa 231.6 ±14 vs
+GL 247.4 ±9 ms — a 6% win beyond noise — ahead of hand MSL 250, ANGLE 281, Slang 289,
+naga 322, stock SPIRV-Cross 442. (Earlier single-sample sessions swung between +23%
+rested and parity loaded — that variability is what motivated the protocol change.) Committed reports: `report_comparison_macos_gl_mtlmesa.html` (rlgl vs
 `rlmtl_mesa`, the shipping configuration, with a callout naming the Mesa compiler and a
 per-row speedup column — two-backend comparisons always get one),
 `report_comparison_macos_gl_mtl_mtlslang_mtlmsl_mtlangle_mtlnaga_mtlmesa.html` (all seven columns), and
@@ -184,6 +183,16 @@ contradictory verdicts. Heavy-scene A/Bs need **60 s orbit-covering runs with th
 interleaved ABBA** (identical thermal states, snapshotted binaries via `RAYLIB_PERF_*` env
 so no rebuilds sit between legs); fragment-heavy scenes in multi-leg campaigns need a
 cooldown before each leg or they measure the thermal ramp.
+
+**Multi-column capture protocol — interleaved cycles, mean of 10** (2026-08-18, replaces
+sequential per-leg capture for the macOS columns): sequential legs bake machine-state
+drift into whole columns (a fanless M5 drifts GPU-heavy medians ~20% over hours; even
+per-leg cooldowns produced a gl-vs-mesa flip from thermal ordering alone). The standard is
+now **10 cycles, each running every column once through all scenes with the column order
+rotated per cycle** (drift lands evenly on all columns), 60 s per sample on the two
+orbit-heavy scenes and 10 s elsewhere, and each cell reported as the **arithmetic mean of
+its 10 samples** (`performance_report`'s Aggregate; run_1..run_10 = cycle number). Build
+switches are ~9 s so rlgl interleaves at full fidelity. One full campaign is ~6.5 h.
 
 ### Threaded-present patched ICDs: the floor removed at the source
 

@@ -109,16 +109,38 @@ static bool LoadRun(const char *path, RunStats *rs)
     return rs->valid;
 }
 
-// Pick the representative run: the one whose median frame time is the median across runs
+// Aggregate = arithmetic mean of every metric across the valid runs (2026-08-18 protocol:
+// runs are interleaved capture cycles, so averaging distributes machine-state drift evenly;
+// the old representative-median-run pick let one leg's thermal window own the whole cell)
 static void Aggregate(ExampleStats *e)
 {
     if (e->runCount <= 0) { e->agg.valid = false; return; }
-    double meds[MAX_RUNS]; int idx[MAX_RUNS], n = 0;
-    for (int i = 0; i < e->runCount; i++) if (e->runs[i].valid) { meds[n] = e->runs[i].fmed; idx[n] = i; n++; }
+    RunStats m = { 0 }; int n = 0;
+    for (int i = 0; i < e->runCount; i++)
+    {
+        RunStats *r = &e->runs[i];
+        if (!r->valid) continue;
+        m.frames  += r->frames;
+        m.seconds += r->seconds;  m.fps     += r->fps;
+        m.fmin    += r->fmin;     m.fmax    += r->fmax;
+        m.fmed    += r->fmed;     m.favg    += r->favg;
+        m.fp95    += r->fp95;     m.fp99    += r->fp99;
+        m.cpuAvg  += r->cpuAvg;   m.cpuPeak += r->cpuPeak;
+        m.ramAvg  += r->ramAvg;   m.ramPeak += r->ramPeak;
+        m.vramAvg += r->vramAvg;  m.vramPeak+= r->vramPeak;
+        n++;
+    }
     if (n == 0) { e->agg.valid = false; return; }
-    // sort (median, index) by median
-    for (int i = 0; i < n; i++) for (int j = i+1; j < n; j++) if (meds[j] < meds[i]) { double t=meds[i];meds[i]=meds[j];meds[j]=t; int ti=idx[i];idx[i]=idx[j];idx[j]=ti; }
-    e->agg = e->runs[idx[n/2]];
+    m.frames /= n;
+    m.seconds /= n;  m.fps     /= n;
+    m.fmin    /= n;  m.fmax    /= n;
+    m.fmed    /= n;  m.favg    /= n;
+    m.fp95    /= n;  m.fp99    /= n;
+    m.cpuAvg  /= n;  m.cpuPeak /= n;
+    m.ramAvg  /= n;  m.ramPeak /= n;
+    m.vramAvg /= n;  m.vramPeak/= n;
+    m.valid = true;
+    e->agg = m;
 }
 
 static void LoadBackend(const char *configFile, BackendStats *b)
@@ -418,11 +440,10 @@ static void ComparisonTable(FILE *f, BackendStats *bk, int nb, const char *title
 
 // Mesa NIR->MSL override callout: emitted whenever an rlmtl_* variant column carries the
 // precompiled-shader override set, so the reader knows which translation produced the
-// mandelbulb row. Evidence measured 2026-08-13 (Apple M5, 60s ABBA interleave, rested
-// machine: mesa 174 vs GL 214, +15-23% every pair); re-verified 2026-08-18 after hours of
-// sustained load: parity (ABBA mesa 213/234 vs GL 223/224; symmetric cooled captures
-// 224.3 vs 225.1). Machine load state moves the pair between those poles; ladder order
-// among translations is stable.
+// mandelbulb row. Evidence: the 2026-08-18 10-cycle interleaved protocol (every column
+// once per cycle, order rotated, mean of 10 samples) - mesa 231.6 sd14 vs GL 247.4 sd9 ms,
+// a 6%% win beyond noise; earlier single-sample sessions swung between +23%% and parity
+// with machine load, which is what motivated the interleaved-mean protocol.
 static void WriteMesaOverrideCallout(FILE *f)
 {
     fprintf(f, "<div class=callout><b>rlmtl_mesa = the native Metal backend + Mesa's shader compiler.</b> "
@@ -431,9 +452,9 @@ static void WriteMesaOverrideCallout(FILE *f)
         "by <code>raylib/tools/nir2msl</code> through <b>Mesa's NIR&rarr;MSL compiler</b> (the KosmicKrisp backend's "
         "<code>kosmicomp</code>, MIT) and injected via <code>RLMTL_MSL_OVERRIDE</code>. On that scene SPIRV-Cross's "
         "flattened-SSA output defeats Metal's optimizer; Mesa's NIR pipeline is the only automatic GLSL translation "
-        "that matches or beats Apple's own GL compiler &mdash; +15&ndash;23%% on a rested machine (60&#8201;s ABBA, "
-        "174 vs 214 ms, 2026-08-13), parity under sustained load (224 vs 225 ms, 2026-08-18) &mdash; ahead of "
-        "hand-written MSL, ANGLE, Slang and naga in every session. "
+        "measured faster than Apple's own GL compiler &mdash; 231.6&#8201;&plusmn;14 vs 247.4&#8201;&plusmn;9 ms over "
+        "10 interleaved cycles (2026-08-18), ahead of hand-written MSL (250), ANGLE (281), Slang (289), naga (322) "
+        "and stock SPIRV-Cross (442). "
         "Pixel drift vs SPIRV-Cross is ULP-class only (84%% of differing channels off by 1, max 17/255; Mesa lowers "
         "sin/cos to conformant polynomials).</div>");
 }
